@@ -1,0 +1,29 @@
+# env/secrets
+.env
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# editor/OS
+.idea/
+.vscode/
+.DS_Store
+
+# local db
+dev.db
+test.db
+
+# uploads (keep folder, ignore contents)
+media/products/*
+!media/products/.keep
+*:Zone.Identifier
