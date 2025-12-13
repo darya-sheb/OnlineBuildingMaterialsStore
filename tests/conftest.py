@@ -7,12 +7,10 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession
 )
 from sqlalchemy import text
-
 from app.main import create_app
 from app.infra.db import get_db
 from app.models.base import Base
 import app.models
-
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
@@ -33,7 +31,6 @@ async def engine():
 async def db(engine):
     SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     async with SessionLocal() as session:
-        # Очищаем БД перед каждым тестом
         tables = ", ".join(f'"{t.name}"' for t in Base.metadata.sorted_tables)
         if tables:
             await session.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE;"))
