@@ -1,52 +1,96 @@
-import os
 import pytest
+import asyncio
+from typing import AsyncGenerator, Generator
+
 from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import (
-    create_async_engine,
-    async_sessionmaker,
-    AsyncSession
-)
-from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
 
-from app.main import create_app
-from app.infra.db import get_db
-from app.models.base import Base
-import app.models
+from app.main import app
 
-
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://app:app@localhost:5432/app"
-)
+DATABASE_URL = "postgresql+asyncpg://app_user:app_password@db:5432/app_db"
 
 
 @pytest.fixture(scope="session")
-async def engine():
-    engine = create_async_engine(DATABASE_URL, echo=False)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+def event_loop():
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(scope="session")
+async def async_engine():
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_pre_ping=True
+    )
     yield engine
     await engine.dispose()
 
 
 @pytest.fixture
-async def db(engine):
-    SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    async with SessionLocal() as session:
-        # Очищаем БД перед каждым тестом
-        tables = ", ".join(f'"{t.name}"' for t in Base.metadata.sorted_tables)
-        if tables:
-            await session.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE;"))
-            await session.commit()
-        yield session
+async def db_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
+    async_session = sessionmaker(
+        async_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+    async with async_session() as session:
+        transaction = await session.begin()
+        try:
+            yield session
+        finally:
+            await transaction.rollback()
+            await session.close()
 
 
 @pytest.fixture
-def client(db):
-    app = create_app()
+def client(db_session: AsyncSession) -> Generator[TestClient, None, None]:
+    from app.infra.db import get_db
 
     async def override_get_db():
-        yield db
+        try:
+            yield db_session
+        finally:
+            pass
 
     app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app)
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def sync_client() -> Generator[TestClient, None, None]:
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+async def test_user(db_session: AsyncSession):
+    from app.features.auth.service import AuthService
+    from app.models.user import User
+
+    auth_service = AuthService()
+
+    user = User(
+        email="test@example.com",
+        password_hash=auth_service.pwd_context.hash("testpassword123"),
+        first_name="Test",
+        last_name="User",
+        phone="+7 999 123-45-67",
+        role="CLIENT"
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    yield user
+
+    await db_session.delete(user)
+    await db_session.commit()
