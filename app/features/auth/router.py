@@ -99,3 +99,5 @@ async def verify_token(token: str = Depends(oauth2_scheme)):
         }
     except HTTPException:
         return {"valid": False}
+
+

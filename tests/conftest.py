@@ -94,3 +94,4 @@ async def test_user(db_session: AsyncSession):
 
     await db_session.delete(user)
     await db_session.commit()
+

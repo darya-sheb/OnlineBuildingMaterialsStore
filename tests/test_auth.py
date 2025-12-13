@@ -133,3 +133,4 @@ def test_password_hashing():
 
     assert bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8')) is True
     assert bcrypt.checkpw("wrong".encode('utf-8'), hashed.encode('utf-8')) is False
+

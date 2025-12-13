@@ -31,3 +31,5 @@ class UserInDB(UserBase):
 
 class UserProfile(UserInDB):
     pass
+
+
