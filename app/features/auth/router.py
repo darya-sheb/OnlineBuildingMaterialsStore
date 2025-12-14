@@ -197,5 +197,3 @@ async def refresh_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Неверный или истекший токен"
         )
-
-
