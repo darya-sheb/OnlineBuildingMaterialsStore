@@ -194,3 +194,4 @@ async def change_user_role(
             detail=f"Ошибка при изменении роли: {str(e)}"
         )
 
+

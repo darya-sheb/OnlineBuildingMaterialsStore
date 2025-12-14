@@ -47,3 +47,4 @@ class User(Base):
 
     orders: Mapped[list[Order]] = relationship(back_populates="user")
     cart: Mapped[Cart | None] = relationship(back_populates="user", uselist=False)
+

@@ -333,3 +333,4 @@ def test_error_messages_in_russian():
             assert e.status_code == 401
             assert "Неверные учетные данные" in str(e.detail)
 
+

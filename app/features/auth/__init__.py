@@ -26,4 +26,3 @@ __all__ = [
     "get_optional_user",
     "oauth2_scheme"
 ]
-

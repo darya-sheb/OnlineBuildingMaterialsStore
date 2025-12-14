@@ -80,3 +80,4 @@ async def get_optional_user(
         return result.scalar_one_or_none()
     except (JWTError, ValueError):
         return None
+
