@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch, AsyncMock, MagicMock
 
 from app.features.auth.service import AuthService
 from app.features.auth.schemas import Token, UserLogin
+from app.models.user import UserRole
 
 
 class TestAuthService:
@@ -27,7 +28,7 @@ class TestAuthService:
             last_name="User",
             phone="+7 999 123-45-67",
             password_hash="$2b$12$testhash123",
-            role="CLIENT"
+            role=UserRole.CLIENT
         )
 
         db.add(user)
@@ -294,7 +295,7 @@ class TestAuthIntegration:
             phone="+7 777 777-77-77",
             email=test_email,
             password_hash="$2b$12$testhash",
-            role="CLIENT"
+            role=UserRole.CLIENT
         )
 
         db.add(user)

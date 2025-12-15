@@ -28,7 +28,6 @@ async def register(
 
     hashed_password = hash_password(user_data.password)
 
-    # Создаем пользователя с выбранной ролью
     user = User(
         email=user_data.email,
         first_name=user_data.first_name,
@@ -57,15 +56,11 @@ async def register(
             detail=f"Ошибка при регистрации: {str(e)}"
         )
 
-
 @router.post("/login", response_model=Token)
 async def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Аутентификация через OAuth2 форму
-    """
     try:
         user = await auth_service.authenticate_user(
             db,
@@ -73,7 +68,6 @@ async def login(
             form_data.password
         )
 
-        # Создаем токен
         access_token = create_access_token(
             user_id=user.user_id,
             role=user.role.value,
@@ -95,15 +89,11 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-
 @router.post("/login-json", response_model=Token)
 async def login_json(
         login_data: UserLogin,
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Аутентификация через JSON
-    """
     try:
         user = await auth_service.authenticate_user(
             db,
@@ -131,12 +121,8 @@ async def login_json(
             detail="Неверный email или пароль",
         )
 
-
 @router.post("/verify-token")
 async def verify_token(token: str = Depends(oauth2_scheme)):
-    """
-    Проверка валидности JWT токена
-    """
     try:
         from app.core.security import decode_access_token
         payload = decode_access_token(token)
@@ -148,15 +134,11 @@ async def verify_token(token: str = Depends(oauth2_scheme)):
     except Exception:
         return {"valid": False}
 
-
 @router.post("/refresh-token", response_model=Token)
 async def refresh_token(
         token: str,
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Обновление access токена
-    """
     try:
         from app.core.security import decode_access_token
         payload = decode_access_token(token)
