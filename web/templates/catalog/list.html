@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,31 +19,379 @@
     <main>
         <h2>Каталог строительных материалов</h2>
 
-        <div>
-            <div>
-            <h3>Кирпич</h3>
-            <p>производитель</p>
-            <p>50 руб</p>
-            <p>наличие</p>
-            <button>Добавить в корзину</button>
-            </div>
+        <h3>Кирпичи и блоки</h3>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://static.tildacdn.com/stor6531-3932-4364-a332-623664396532/33785359.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Кирпич красный М-150 (250х120х65 мм)</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Воскресенский кирпичный завод</p>
+            <p class="product-price"><strong>Цена:</strong> 22 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> штука</p>
+            <p class="product-stock"><strong>В наличии:</strong> 1 583 шт</p>
 
             <div>
-            <h3>Цемент</h3>
-            <p>производитель</p>
-            <p>450 руб</p>
-            <p>наличие</p>
-            <button>Добавить в корзину</button>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="1583"
+                        data-max="1583">
+                <span>шт</span>
             </div>
 
-            <div>
-            <h3>Песок</h3>
-            <p>производитель</p>
-            <p>1200 руб</p>
-            <p>наличие</p>
-            <button>Добавить в корзину</button>
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
             </div>
         </div>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://n-dom.com/upload/iblock/mye/myemvztczps2jqtcw0qn4wkpx12xb9o2.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Кирпич облицовочный белый (250х120х88 мм)</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Борский силикатный завод</p>
+            <p class="product-price"><strong>Цена:</strong> 30 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> штука</p>
+            <p class="product-stock"><strong>В наличии:</strong> 847 шт</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="847"
+                        data-max="847">
+                <span>шт</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://gbi-istra.ru/wp-content/uploads/2022/03/original-925x925-fit-4.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Газоблок D500 (600х300х200 мм)</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Bonolit</p>
+            <p class="product-price"><strong>Цена:</strong> 123 руб/шт</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> штука</p>
+            <p class="product-stock"><strong>В наличии:</strong> 478 шт</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="478"
+                        data-max="478">
+                <span>шт</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://stroy77.ru/upload/iblock/49c/49c40e590bf1aaf13bfd5c8e4ad72a07.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Пеноблок (600х300х200 мм)</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Bonolit</p>
+            <p class="product-price"><strong>Цена:</strong> 96 руб/шт<br><small>(3 780 руб/м³)</small></p>
+            <p class="product-unit"><strong>Единица измерения:</strong> штука</p>
+            <p class="product-stock"><strong>В наличии:</strong> 352 шт</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="352"
+                        data-max="352">
+                <span>шт</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <h3>Сухие смеси</h3>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://cementum.ru/upload/weimg_cache/eca/ecaae813213eb5077f1e6acb444f7351/e51fj6nw9ei032rdydow4a5rn0gqku31.webp" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Цемент М500 Д0 (50 кг)</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Евроцемент</p>
+            <p class="product-price"><strong>Цена:</strong> 448 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> мешок</p>
+            <p class="product-stock"><strong>В наличии:</strong> 124 мешка</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="124"
+                        data-max="124">
+                <span>мешков</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://stroika-alfa.ru/upload/iblock/0aa/f3n7safsmf2butk175r8lfas4cw5kcsv/shtukaturka_gipsovaya_volma_sloy_30_kg_detail.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Штукатурка гипсовая Волма Слой (30 кг)</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Волма</p>
+            <p class="product-price"><strong>Цена:</strong> 382 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> мешок</p>
+            <p class="product-stock"><strong>В наличии:</strong> 87 мешков</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="87"
+                        data-max="87">
+                <span>мешков</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://media.obi.ru/resize/780x780/media/catalog/product/3/8/3811205_1_a348.jpg?store=moscow&image-type=small_image" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Клей плиточный Ceresit CM 11 (25 кг)</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Ceresit</p>
+            <p class="product-price"><strong>Цена:</strong> 565 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> мешок</p>
+            <p class="product-stock"><strong>В наличии:</strong> 63 мешка</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="63"
+                        data-max="63">
+                <span>мешков</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <h3>Пиломатериалы</h3>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://lesdok.ru/wa-data/public/shop/products/65/91/9165/images/12109/12109.970.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Доска обрезная 40х200х6000 мм</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Лесопилка "Тайга"</p>
+            <p class="product-price"><strong>Цена:</strong> 15 240 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> кубометр (м³)</p>
+            <p class="product-stock"><strong>В наличии:</strong> 8,7 м³</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="0,1" 
+                        max="8,7"
+                        data-max="8.7"
+                        step="0.1">
+                <span>м³</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://grandlesmarket.ru/assets/cache_image/products/534/brus-obreznoj-kamernoj-sushki_900x760_cf6.webp" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Брус 100х100х6000 мм</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Лесопилка "Тайга"</p>
+            <p class="product-price"><strong>Цена:</strong> 18 150 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> кубометр (м³)</p>
+            <p class="product-stock"><strong>В наличии:</strong> 5,3 м³</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="0,1" 
+                        max="5,3"
+                        data-max="5.3"
+                        step="0.1">
+                <span>м³</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://ollq.ru/images/detailed/278/491b6fbd5409c9ceb9f8f296df86ac3b.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Фанера ФК 1525х1525х12 мм</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Сыктывкарский ФЗ</p>
+            <p class="product-price"><strong>Цена:</strong> 947 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> лист</p>
+            <p class="product-stock"><strong>В наличии:</strong> 49 листов</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="49"
+                        data-max="49">
+                <span>листов</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <h3>Кровля и изоляция</h3>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://micro-line.ru/images/detailed/1265/83842822_01.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Металлочерепица 0,5 мм</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Grand Line</p>
+            <p class="product-price"><strong>Цена:</strong> 452 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> м²</p>
+            <p class="product-stock"><strong>В наличии:</strong> 124,5 м²</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="0,5" 
+                        max="124,5"
+                        data-max="124.5"
+                        step="0.5">
+                <span>м²</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://avatars.mds.yandex.net/get-mpic/12140066/2a0000018eae752b1fffc8de0d589666de53/orig" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Утеплитель Rockwool 100 мм</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Rockwool</p>
+            <p class="product-price"><strong>Цена:</strong> 1 195 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> упаковка (5 м²)</p>
+            <p class="product-stock"><strong>В наличии:</strong> 37 упаковок</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="37"
+                        data-max="37">
+                <span>упаковок</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>        
+
+        <h3>Инструменты</h3>
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://saray.ru/upload/iblock/b9c/t6wqmxioxurj0bs4mvpmpdu4em0vxcbq.jpg" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Перфоратор Makita HR2470 780Вт 2,7 Дж</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Makita</p>
+            <p class="product-price"><strong>Цена:</strong> 12 480 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> штука</p>
+            <p class="product-stock"><strong>В наличии:</strong> 7 шт</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="7"
+                        data-max="7">
+                <span>шт</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>      
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://static.baza.farpost.ru/v/1573884819809_bulletin" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Болгарка Интерскол 125 мм</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Интерскол</p>
+            <p class="product-price"><strong>Цена:</strong> 3 825 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> штука</p>
+            <p class="product-stock"><strong>В наличии:</strong> 14 шт</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="14"
+                        data-max="14">
+                <span>шт</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>   
+
+        <div class="product-card">
+            <div class="product-image"><img src="https://avatars.mds.yandex.net/get-goods_pic/10963530/hat68c9da3893a7fb23ee0fa6e882549f9e/orig" alt="фото товара" width="200"></div>
+            <h4 class="product-title">Набор инструментов 137 предметов</h4>
+            <p class="product-manufacturer"><strong>Производитель:</strong> Tolsen</p>
+            <p class="product-price"><strong>Цена:</strong> 2 490 руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> набор</p>
+            <p class="product-stock"><strong>В наличии:</strong> 17 наборов</p>
+
+            <div>
+                <label><strong>Количество:</strong></label>
+                <input type="number" 
+                        class="quantity-input"
+                        value="1" 
+                        min="1" 
+                        max="17"
+                        data-max="17">
+                <span>наборов</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="add-to-cart">Добавить в корзину</button>
+            </div>
+        </div>   
+
     </main>
 
     <div class="footer">
