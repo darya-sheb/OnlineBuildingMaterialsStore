@@ -10,7 +10,3 @@ class Token(BaseModel):
     user_id: int
     role: str
 
-class TokenData(BaseModel):
-    user_id: int
-    email: str
-    role: str
