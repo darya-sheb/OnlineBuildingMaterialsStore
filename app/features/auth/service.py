@@ -1,0 +1,47 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from fastapi import HTTPException, status
+from app.core.security import verify_password, decode_access_token
+from app.models.user import User
+
+
+class AuthService:
+    async def authenticate_user(
+            self,
+            db: AsyncSession,
+            email: str,
+            password: str
+    ):
+        """Аутентификация пользователя"""
+        result = await db.execute(
+            select(User).where(User.email == email)
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Неверный email или пароль"
+            )
+
+        if not verify_password(password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Неверный email или пароль"
+            )
+
+        return user
+    
+    def verify_token(self, token: str):
+        """Верификация JWT токена"""
+        try:
+            return decode_access_token(token)
+        except  Exception:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Неверные учетные данные",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+
+auth_service = AuthService()
