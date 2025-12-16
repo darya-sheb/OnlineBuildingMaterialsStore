@@ -21,6 +21,7 @@ async def get_products_by_ids(db: AsyncSession, product_ids: List[int]) -> List[
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
+
 async def create_product(db: AsyncSession, product: PrCreate) -> Product:
     db_pr = Product(**product.model_dump())
     db.add(db_pr)
