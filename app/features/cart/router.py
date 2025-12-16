@@ -71,6 +71,7 @@ async def add_item(item_data: CartItemCreate, req: Request, db: AsyncSession = D
         "quantity": itemm["quantity"]
     }
 
+
 @router.put("/items/{item_id}")
 async def update_cart_item(item_id: int, update: CartItemUpdate, req: Request, db: AsyncSession = Depends(get_db)):  # ← AsyncSession
     ses_id = get_session_id(req)
@@ -82,6 +83,7 @@ async def update_cart_item(item_id: int, update: CartItemUpdate, req: Request, d
     return {"id": item_id,
         "quantity": update.quantity,
         "total": product.price * update.quantity }
+
 
 @router.delete("/items/{item_id}")
 async def remove_item(item_id: int, req: Request):

@@ -17,6 +17,7 @@ def add_to_cart(ses_id: str, product_id: int, quantity: int = 1) -> dict:
     cart.append(neww)
     return neww
 
+
 def get_cart_items(ses_id: str) -> List[dict]:
     return get_cart(ses_id)
 

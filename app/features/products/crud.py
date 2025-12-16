@@ -14,6 +14,7 @@ async def get_products(db: AsyncSession) -> List[Product]:
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
+
 async def get_products_by_ids(db: AsyncSession, product_ids: List[int]) -> List[Product]:
     if not product_ids:
         return []
@@ -27,6 +28,7 @@ async def create_product(db: AsyncSession, product: PrCreate) -> Product:
     await db.commit()
     await db.refresh(db_pr)
     return db_pr
+
 
 async def update_product(db: AsyncSession, product_id: int, update_data: PrUpdate) -> Optional[Product]:
     db_pr = await get_product(db, product_id)

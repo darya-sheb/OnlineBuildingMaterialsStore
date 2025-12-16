@@ -11,6 +11,8 @@ router = APIRouter(prefix="/products", tags=["products"])
 async def read_products(db: AsyncSession = Depends(get_db)):
     return await product_crud.get_products(db)
 
+
+
 @router.get("/{product_id}", response_model=PrRead)
 async def read_product(product_id: int, db: AsyncSession = Depends(get_db)):
     product = await product_crud.get_product(db, product_id)
