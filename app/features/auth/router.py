@@ -9,15 +9,19 @@ from app.features.auth.schemas import Token, UserLogin
 from app.features.users.schemas import UserCreate, UserProfile
 from app.models.user import User, UserRole
 from app.infra.db import get_db
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+from app.infra.templates import templates
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+
 @router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
 async def register(
-    user_data: UserCreate,
-    db: AsyncSession = Depends(get_db)
+        user_data: UserCreate,
+        db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(select(User).where(User.email == user_data.email))
     if result.scalar_one_or_none():
@@ -56,6 +60,7 @@ async def register(
             detail=f"Ошибка при регистрации: {str(e)}"
         )
 
+
 @router.post("/login", response_model=Token)
 async def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
@@ -89,6 +94,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+
 @router.post("/login-json", response_model=Token)
 async def login_json(
         login_data: UserLogin,
@@ -121,6 +127,7 @@ async def login_json(
             detail="Неверный email или пароль",
         )
 
+
 @router.post("/verify-token")
 async def verify_token(token: str = Depends(oauth2_scheme)):
     try:
@@ -133,6 +140,7 @@ async def verify_token(token: str = Depends(oauth2_scheme)):
         }
     except Exception:
         return {"valid": False}
+
 
 @router.post("/refresh-token", response_model=Token)
 async def refresh_token(
