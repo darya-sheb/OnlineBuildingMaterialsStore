@@ -18,7 +18,6 @@ class CartItemRead(BaseModel):
     product_unit: str
     total_price: Decimal
 
-
 class CartRead(BaseModel):
     cart_id: int
     items: List[CartItemRead]
