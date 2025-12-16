@@ -1,13 +1,7 @@
 from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 from datetime import datetime
 from typing import Optional
-from enum import Enum as PyEnum
 import re
-
-class UserRole(PyEnum):
-    CLIENT = "CLIENT"
-    STAFF = "STAFF"
-
 
 class UserBase(BaseModel):
     email: EmailStr

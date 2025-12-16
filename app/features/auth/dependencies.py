@@ -5,10 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from jose import JWTError
 from app.core.security import decode_access_token
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.infra.db import get_db
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -45,7 +45,7 @@ async def get_current_active_user(
 ) -> User:
     return current_user
 
-def require_role(required_role: str):
+def require_role(required_role: UserRole):
     async def role_checker(
         current_user: User = Depends(get_current_active_user)
     ) -> User:
@@ -57,8 +57,8 @@ def require_role(required_role: str):
         return current_user
     return role_checker
 
-get_current_client = require_role("CLIENT")
-get_current_staff = require_role("STAFF")
+get_current_client = require_role(UserRole.CLIENT)
+get_current_staff = require_role(UserRole.STAFF)
 
 async def get_optional_user(
     token: Optional[str] = Depends(oauth2_scheme),

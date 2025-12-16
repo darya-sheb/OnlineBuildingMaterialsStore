@@ -1,6 +1,6 @@
 from .router import router
 from .service import auth_service, AuthService
-from .schemas import Token, UserLogin, TokenData
+from .schemas import Token, UserLogin
 from .dependencies import (
     get_current_user,
     get_current_active_user,
@@ -17,7 +17,6 @@ __all__ = [
     "AuthService",
     "Token",
     "UserLogin",
-    "TokenData",
     "get_current_user",
     "get_current_active_user",
     "get_current_client",

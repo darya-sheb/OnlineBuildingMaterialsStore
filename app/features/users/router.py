@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from pydantic import ConfigDict
 
 from app.features.auth.dependencies import (
     get_current_user,
@@ -22,16 +23,11 @@ from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
-
 @router.get("/me", response_model=UserProfile)
 async def get_my_profile(
         current_user: User = Depends(get_current_active_user)
 ):
-    """
-    Получить свой профиль
-    """
     return current_user
-
 
 @router.put("/me", response_model=UserProfile)
 async def update_my_profile(
@@ -39,9 +35,6 @@ async def update_my_profile(
         current_user: User = Depends(get_current_active_user),
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Обновить свой профиль
-    """
     update_dict = update_data.dict(exclude_unset=True)
     for key, value in update_dict.items():
         setattr(current_user, key, value)
@@ -57,16 +50,12 @@ async def update_my_profile(
             detail=f"Ошибка при обновлении профиля: {str(e)}"
         )
 
-
 @router.post("/me/change-password")
 async def change_my_password(
         password_data: ChangePasswordRequest,
         current_user: User = Depends(get_current_active_user),
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Изменить пароль текущего пользователя
-    """
     if not verify_password(password_data.current_password, current_user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -93,7 +82,6 @@ async def change_my_password(
             detail=f"Ошибка при изменении пароля: {str(e)}"
         )
 
-
 @router.get("/users", response_model=List[UserPublic])
 async def get_all_users(
         skip: int = Query(0, ge=0),
@@ -101,9 +89,6 @@ async def get_all_users(
         current_user: User = Depends(get_current_staff),
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Получить список всех пользователей (только для STAFF)
-    """
     result = await db.execute(
         select(User)
         .offset(skip)
@@ -113,19 +98,12 @@ async def get_all_users(
     users = result.scalars().all()
     return users
 
-
 @router.get("/users/{user_id}", response_model=UserProfile)
 async def get_user_by_id(
         user_id: int,
         current_user: User = Depends(get_current_active_user),
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Получить профиль пользователя по ID
-
-    STAFF может просматривать любого пользователя
-    CLIENT может просматривать только свой профиль
-    """
     if current_user.role != UserRole.STAFF and current_user.user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -145,17 +123,13 @@ async def get_user_by_id(
 
     return user
 
-
 @router.put("/users/{user_id}/role", response_model=UserProfile)
 async def change_user_role(
         user_id: int,
         new_role: str = Query(..., description="Новая роль (CLIENT или STAFF)"),
-        current_user: User = Depends(get_current_staff),  # Только для STAFF
+        current_user: User = Depends(get_current_staff),
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Изменить роль пользователя (только для STAFF)
-    """
     try:
         user_role = UserRole(new_role)
     except ValueError:
