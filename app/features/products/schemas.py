@@ -29,4 +29,3 @@ class PrRead(ProductC):
     model_config = ConfigDict(from_attributes=True)
 
 
-    
