@@ -9,7 +9,7 @@ from app.core.settings import settings
 from app.features.auth.router import router as auth_router
 from app.features.cart.router import router as cart_router
 from app.features.orders.router import router as orders_router
-from app.features.products.router import router as products_router
+from app.features.products.form_router import router as products_router
 from app.features.staff.router import router as staff_router
 from app.features.users.router import router as users_router
 

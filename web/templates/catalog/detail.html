@@ -1,67 +1,52 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div class="header">
-        <h1>СтройМаг</h1>
-        <nav>
-            <a href="/">Главная</a>
-            <a href="/catalog">Каталог</a>
-            <a href="/cart">Корзина</a>
-            <a href="/login">Войти</a>
-        </nav>
-    </div>
+{% extends "base.html" %}
 
-    <main>
-        <h2>Кирпич красный М-150</h2>
+{% block title %}Кирпич красный М-150 - СтройМаг{% endblock %}
 
-        <div><img src="https://static.tildacdn.com/stor6531-3932-4364-a332-623664396532/33785359.jpg" alt="Фото товара" width="300"></div>
+{% block content %}
+<main>
+    <h2>Кирпич красный М-150</h2>
 
-        <div>
-            <h3>Описание</h3>
-            <p>Красный керамический кирпич полнотелый марки М-150 — универсальный строительный материал 
+    <div><img src="https://static.tildacdn.com/stor6531-3932-4364-a332-623664396532/33785359.jpg" alt="Фото товара" width="300"></div>
+
+    <div>
+        <h3>Описание</h3>
+        <p>Красный керамический кирпич полнотелый марки М-150 — универсальный строительный материал 
 для возведения несущих стен, перегородок, цоколей и фундаментов. Обладает высокой прочностью, 
 морозостойкостью и долговечностью. Идеально подходит для строительства в условиях 
 российского климата.</p>
-        </div>
-        
-        <div>
-            <h3>Характеристики</h3>
-            <ul>
-                <li><strong>Марка прочности:</strong> М-150</li>
-                <li><strong>Размер:</strong> 250х120х65 мм</li>
-                <li><strong>Вес:</strong> 3,5 кг</li>
-                <li><strong>Производитель:</strong> Воскресенский кирпичный завод</li>
-                <li><strong>Наличие:</strong> 1583 шт</li>
-            </ul>
-        </div>
-
-        <div>
-            <h3>Цена</h3><p>22 руб/шт</p>
-        </div>
-
-        <div>
-            <label><strong>Количество:</strong></label>
-            <input type="number" 
-                    value="1" 
-                    min="1" 
-                    max="1583"
-                    style="width: 60px; padding: 5px; margin: 0 10px;">
-                <span>шт</span>
-        </div>        
-
-
-        <div style="margin-top: 20px;">
-            <button>Добавить в корзину</button>
-        </div>        
-    </main>
-
-    <div class="footer">
-        <p>© 2025 СтройМаг</p>
     </div>
-</body>
-</html>
+    
+    <div>
+        <h3>Характеристики</h3>
+        <ul>
+            <li><strong>Марка прочности:</strong> М-150</li>
+            <li><strong>Размер:</strong> 250х120х65 мм</li>
+            <li><strong>Вес:</strong> 3,5 кг</li>
+            <li><strong>Производитель:</strong> Воскресенский кирпичный завод</li>
+            <li><strong>Наличие:</strong> 1583 шт</li>
+        </ul>
+    </div>
+
+    <div>
+        <h3>Цена</h3><p>22 руб/шт</p>
+    </div>
+
+    <div>
+        <label><strong>Количество:</strong></label>
+        <input type="number" 
+                value="1" 
+                min="1" 
+                max="1583"
+                style="width: 60px; padding: 5px; margin: 0 10px;">
+            <span>шт</span>
+    </div>        
+
+    <div style="margin-top: 20px;">
+        <button>Добавить в корзину</button>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="/products">← Вернуться в каталог</a>
+    </div>
+</main>
+{% endblock %}
