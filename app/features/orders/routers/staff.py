@@ -3,12 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from app.features.users.depends import require_staff
 from app.features.orders import service as order_service
-from app.features.orders.schemas import OrderResponse
 
 router = APIRouter(prefix="/staff/orders", tags=["staff-orders"])
 
 
-@router.get("/", response_model=list[OrderResponse])
+@router.get("/")
 async def get_all_orders(
     session: AsyncSession = Depends(get_session),
     staff_user=Depends(require_staff)
@@ -18,7 +17,7 @@ async def get_all_orders(
     return orders
 
 
-@router.get("/{order_id}", response_model=OrderResponse)
+@router.get("/{order_id}")
 async def get_order_details(
     order_id: int,
     session: AsyncSession = Depends(get_session),
@@ -31,7 +30,7 @@ async def get_order_details(
     return order
 
 
-@router.get("/search", response_model=list[OrderResponse])
+@router.get("/search")
 async def search_orders_by_email(
     email: str = Query(..., description="Email клиента для поиска заказов"),
     session: AsyncSession = Depends(get_session),
