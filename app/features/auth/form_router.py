@@ -60,7 +60,6 @@ async def register_redirect(
 async def login_redirect(
         email: EmailStr = Form(),
         password: str = Form(),
-        password_confirm: str = Form(),
         db: AsyncSession = Depends(get_db)):
     try:
         login_data = UserLogin(
