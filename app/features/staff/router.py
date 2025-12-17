@@ -1,42 +1,56 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from app.features.users.depends import require_staff
-from app.features.orders import service as order_service
-from app.features.orders.schemas import OrderResponse
+from app.features.products.service import get_all_products, create_product, adjust_stock
+from app.features.products.schemas import ProductCreate, ProductResponse
 
-router = APIRouter(prefix="/staff/orders", tags=["staff-orders"])
+router = APIRouter(prefix="/staff", tags=["staff"])
 
 
-@router.get("/", response_model=list[OrderResponse])
-async def get_all_orders(
+@router.get("/products")
+async def list_staff_products(
     session: AsyncSession = Depends(get_session),
-    staff_user=Depends(require_staff)
+    staff=Depends(require_staff)
 ):
-    """Получить список всех заказов (только для работника)"""
-    orders = await order_service.get_all_orders(session)
-    return orders
+    """Получить список всех товаров (бэкенд для таблицы товаров)"""
+    products = await get_all_products(session)
+    return products
 
 
-@router.get("/{order_id}", response_model=OrderResponse)
-async def get_order_details(
-    order_id: int,
+@router.post("/products/new")
+async def create_new_product(
+    name: str = Form(...),
+    manufacturer: str = Form(...),
+    price: float = Form(...),
+    unit: str = Form(...),
+    image: UploadFile = File(None),
     session: AsyncSession = Depends(get_session),
-    staff_user=Depends(require_staff)
+    staff=Depends(require_staff)
 ):
-    """Получить детали заказа по ID (только для работника)"""
-    order = await order_service.get_order_by_id(session, order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    return order
+    """Создать новый товар (с фото)"""
+    product_in = ProductCreate(
+        name=name,
+        manufacturer=manufacturer,
+        price=price,
+        unit=unit
+    )
+    product = await create_product(session, product_in, image)
+    return {"id": product.id, "name": product.name}
 
 
-@router.get("/search", response_model=list[OrderResponse])
-async def search_orders_by_email(
-    email: str = Query(..., description="Email клиента для поиска заказов"),
+@router.post("/products/{product_id}/stock")
+async def update_product_stock(
+    product_id: int,
+    delta: int = Form(...),
     session: AsyncSession = Depends(get_session),
-    staff_user=Depends(require_staff)
+    staff=Depends(require_staff)
 ):
-    """Найти все заказы по email клиента"""
-    orders = await order_service.get_orders_by_email(session, email)
-    return orders 
+    """Изменить остаток товара (приход/расход)"""
+    product = await adjust_stock(session, product_id, delta)
+    if not product:
+        raise HTTPException(status_code=404, detail="Товар не найден или недостаточно остатков")
+    return {
+        "id": product.id,
+        "quantity_available": product.quantity_available
+    }
