@@ -59,6 +59,7 @@ async def get_cart(req: Request, db: AsyncSession = Depends(get_db)):
             })
     return {"Data": data, "total_price": sum}
 
+#??
 @router.post("/items/")
 async def add_item(item_data: CartItemCreate, req: Request, db: AsyncSession = Depends(get_db)):
     ses_id = get_session_id(req)

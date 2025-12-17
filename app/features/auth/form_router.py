@@ -19,7 +19,7 @@ async def login_page(request: Request):
     return templates.TemplateResponse("auth/login.html", {"request": request})
 
 
-@router.post("/form/register", response_class=RedirectResponse)
+@router.post("/register/redirect", response_class=RedirectResponse)
 async def register_redirect(
         request: Request,
         email: str = Form(),
@@ -46,7 +46,7 @@ async def register_redirect(
 
         await register_json(user_data, db)
         return RedirectResponse(
-            url="/products/catalog?message=registration_success",
+            url="/products/catalog",
             status_code=303
         )
     except Exception as error:
