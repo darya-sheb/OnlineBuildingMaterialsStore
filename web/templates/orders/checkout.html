@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Оформление заказа</h2>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/orders/checkout">
+        <div class="mb-3">
+            <label for="email" class="form-label">Введите ваш email</label>
+            <input type="email"
+                   class="form-control"
+                   id="email"
+                   name="email"
+                   required
+                   placeholder="example@mail.com">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Оформить заказ</button>
+    </form>
+</div>
+{% endblock %}
