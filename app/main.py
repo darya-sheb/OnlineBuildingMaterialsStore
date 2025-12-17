@@ -41,18 +41,16 @@ def create_app() -> FastAPI:
     async def home_page(request: Request):
         return templates.TemplateResponse("index.html", {"request": request})
     
-    @app.get("/register", response_class=HTMLResponse, include_in_schema=False)
+    # Auth
+    @app.get("/auth/register", response_class=HTMLResponse, include_in_schema=False)
     async def register_page(request: Request):
         return templates.TemplateResponse("auth/register.html", {"request": request})
     
-    @app.get("/login", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/auth/login", response_class=HTMLResponse, include_in_schema=False)
     async def login_page(request: Request):
         return templates.TemplateResponse("auth/login.html", {"request": request})
     
-    @app.get("/cart", response_class=HTMLResponse, include_in_schema=False)
-    async def cart_page(request: Request):
-        return templates.TemplateResponse("cart/view.html", {"request": request})
-    
+    # Каталог
     @app.get("/products", response_class=HTMLResponse, include_in_schema=False)
     async def products_page(request: Request):
         return templates.TemplateResponse("catalog/list.html", {"request": request})
@@ -64,31 +62,40 @@ def create_app() -> FastAPI:
             "product_id": product_id
         })
     
-    @app.get("/order-confirm", response_class=HTMLResponse, include_in_schema=False)
-    async def order_confirm_page(request: Request):
+    # Корзина
+    @app.get("/cart", response_class=HTMLResponse, include_in_schema=False)
+    async def cart_page(request: Request):
+        return templates.TemplateResponse("cart/view.html", {"request": request})
+    
+    # Оформление заказа
+    @app.get("/orders/checkout", response_class=HTMLResponse, include_in_schema=False)
+    async def order_checkout_page(request: Request):
         return templates.TemplateResponse("cart/confirmation.html", {"request": request})
     
-    @app.get("/order-success", response_class=HTMLResponse, include_in_schema=False)
-    async def order_success_page(request: Request):
-        return templates.TemplateResponse("orders/success.html", {"request": request})
+    @app.get("/orders/success/{order_id}", response_class=HTMLResponse, include_in_schema=False)
+    async def order_success_page(request: Request, order_id: int):
+        return templates.TemplateResponse("orders/success.html", {
+            "request": request,
+            "order_id": order_id
+        })
     
-    # Личный кабинет пользователя
+    # Личный кабинет
     @app.get("/profile", response_class=HTMLResponse, include_in_schema=False)
     async def profile_page(request: Request):
         return templates.TemplateResponse("users/profile.html", {"request": request})
     
-    @app.get("/profile/orders", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/orders/my", response_class=HTMLResponse, include_in_schema=False)
     async def user_orders_page(request: Request):
         return templates.TemplateResponse("orders/history.html", {"request": request})
     
     @app.get("/orders/{order_id}", response_class=HTMLResponse, include_in_schema=False)
-    async def user_order_detail_page(request: Request, order_id: int):
+    async def order_detail_page(request: Request, order_id: int):
         return templates.TemplateResponse("orders/detail.html", {
             "request": request,
             "order_id": order_id
         })
     
-    # Панель сотрудника
+    # Staff
     @app.get("/staff", response_class=HTMLResponse, include_in_schema=False)
     async def staff_dashboard_page(request: Request):
         return templates.TemplateResponse("staff/dashboard.html", {"request": request})
@@ -108,11 +115,6 @@ def create_app() -> FastAPI:
     async def staff_products_page(request: Request):
         return templates.TemplateResponse("staff/products.html", {"request": request})
     
-    # удобный редирект на каталог (оставить для API)
-    @app.get("/api-redirect", include_in_schema=False)
-    async def api_root():
-        return RedirectResponse(url="/products")
-
     # routers
     app.include_router(auth_router)
     app.include_router(users_router)
