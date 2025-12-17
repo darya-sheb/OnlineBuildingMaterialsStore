@@ -39,4 +39,4 @@ async def search_orders_by_email(
 ):
     """Найти все заказы по email клиента"""
     orders = await order_service.get_orders_by_email(session, email)
-    return orders
+    return orders 
