@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация в СтройМаг</title>
+</head>
+<body>
+<div class="header">
+    <h1>СтройМаг</h1>
+    <nav>
+        <a href="/">Главная</a>
+        <a href="/catalog">Каталог</a>
+        <a href="/cart">Корзина</a>
+        <a href="/auth/login">Войти</a>
+    </nav>
+</div>
+
+<div class="форма">
+    <form action="/auth/form/register" method="post">
+        <div class="поле">
+            <label>Фамилия:</label>
+            <input type="text" name="last_name" placeholder="введите фамилию">
+        </div>
+        <div class="поле">
+            <label>Имя:</label>
+            <input type="text" name="first_name" placeholder="введите имя">
+        </div>
+        <div class="поле">
+            <label>Отчество:</label>
+            <input type="text" name="patronymic" placeholder="введите отчество">
+        </div>
+        <div class="поле">
+            <label>Почта:</label>
+            <input type="email" name="email" placeholder="example@yandex.com">
+        </div>
+        <div class="поле">
+            <label>Мобильный телефон:</label>
+            <input type="text" name="phone" placeholder="+7 XXX XXX-XX-XX">
+        </div>
+        <div class="поле">
+            <label>Пароль:</label>
+            <input type="password" name="password" placeholder="введите пароль">
+        </div>
+        <div class="поле">
+            <label>Повторите пароль:</label>
+            <input type="password" name=password_confirm placeholder="повторите пароль">
+        </div>
+        <input type="hidden" name="role" value="CLIENT">
+        <button type="submit" class="тык">Зарегистрироваться</button>
+    </form>
+</div>
+
+{% if request.query_params.get('error') %}
+<div style="color: red; padding: 10px; margin: 10px; border: 1px solid red;">
+    Ошибка: {{ request.query_params.get('error') }}
+</div>
+{% endif %}
+
+<!--{% if request.query_params.get('message') %}-->
+<!--<div style="color: purple; padding: 10px; margin: 10px; border: 1px solid red;">-->
+<!--    Успешная регистрация: {{ request.query_params.get('message') }}-->
+<!--</div>-->
+<!--{% endif %}-->
+
+<div class="footer">
+    <p>© 2025 СтройМаг</p>
+</div>
+
+</body>
+</html>
