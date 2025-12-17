@@ -1,19 +1,30 @@
 from datetime import datetime, timedelta, timezone
 from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
 from starlette.responses import Response
 
 from app.core.settings import settings
 
-_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(password: str) -> str:
-    return _pwd.hash(password)
+    """Хеширование пароля с использованием bcrypt."""
+    password_bytes = password.encode("utf-8")
+    if len(password_bytes) > 72:
+        password_bytes = password_bytes[:72]
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode("utf-8")
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    return _pwd.verify(password, password_hash)
+    """Проверка пароля."""
+    try:
+        password_bytes = password.encode("utf-8")
+        if len(password_bytes) > 72:
+            password_bytes = password_bytes[:72]
+        return bcrypt.checkpw(password_bytes, password_hash.encode("utf-8"))
+    except Exception:
+        return False
 
 
 def create_access_token(user_id: int, role: str, expires_minutes: int = 120) -> str:
