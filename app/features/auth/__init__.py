@@ -1,4 +1,5 @@
 from .router import router
+from . import form_router
 from .service import auth_service, AuthService
 from .schemas import Token, UserLogin
 from .dependencies import (
@@ -13,6 +14,7 @@ from .dependencies import (
 
 __all__ = [
     "router",
+    "form_router",
     "auth_service",
     "AuthService",
     "Token",

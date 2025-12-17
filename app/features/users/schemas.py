@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator, model_validator
 from datetime import datetime
 from typing import Optional
 import re
@@ -7,7 +7,7 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    phone: str
+    phone: Optional[str] = None
     patronymic: Optional[str] = None
 
     @field_validator('phone')
@@ -21,6 +21,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    password_confirm: str
     role: Optional[str] = "CLIENT"
 
     @field_validator('role')
@@ -42,6 +43,15 @@ class UserCreate(UserBase):
         if not re.search(r'\d', v):
             raise ValueError('Пароль должен содержать хотя бы одну цифру')
         return v
+
+    @model_validator(mode='after')
+    def validate_passwords_match(self):
+        password = self.password
+        password_confirm = self.password_confirm
+
+        if password != password_confirm:
+            raise ValueError('Пароли не совпадают')
+        return self
 
 
 class UserUpdate(BaseModel):

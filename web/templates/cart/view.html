@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина</title>
+</head>
+
+<body>
+    <div class="header">
+        <h1>СтройМаг</h1>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="/catalog">Каталог</a>
+            <a href="/cart">Корзина</a>
+            <a href="/login">Войти</a>
+        </nav>
+    </div>
+
+    <main>
+        <h2>Корзина покупок</h2>
+
+        <div class="cart-items">
+            <div class="cart-item">
+                <div class="item-info">
+                    <h3>Кирпич красный М-150</h3>
+                    <p>Цена: <strong>22 руб/шт</strong></p>
+                </div>
+
+                <div class="item-quantity">
+                    <label>Количество:</label>
+                    <input type="number" value="10" min="1">
+                    <span>шт</span>
+                </div>
+
+                <div class="item-total">
+                    <p><strong>220 руб</strong></p>
+                </div>
+
+                <div class="item-remove">
+                    <button>Удалить</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="cart-items">
+            <div class="cart-item">
+                <div class="item-info">
+                    <h3>Утеплитель Rockwool 100 мм</h3>
+                    <p>Цена: <strong>1 195 руб/упаковка</strong></p>
+                </div>
+
+                <div class="item-quantity">
+                    <label>Количество:</label>
+                    <input type="number" value="2" min="1">
+                    <span>шт</span>
+                </div>
+
+                <div class="item-total">
+                    <p><strong>2 390 руб</strong></p>
+                </div>
+
+                <div class="item-remove">
+                    <button>Удалить</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="total">
+            <p><strong>Итого: <span id="total-price">2 610</span> руб</strong></p>
+        </div>
+
+        <div class="order-actions">
+            <!-- ЗДЕСЬ ПОМЕНЯЛА: теперь кнопка - это редирект на другую страницу оформления заказа с email -->
+            <a href="/orders/checkout" class="checkout-btn">Оформить заказ</a>
+            <a href="/catalog" class="continue-btn">Продолжить покупки</a>
+        </div>
+    </main>
+
+    <div class="footer">
+        <p>© 2025 СтройМаг</p>
+    </div>
+</body>
+</html>
