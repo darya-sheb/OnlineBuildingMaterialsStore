@@ -1,61 +1,43 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Все заказы - СтройМаг</title>
-</head>
-<body>
-    <div class="header">
-        <h1>СтройМаг</h1>
-        <nav>
-            <a href="/">Главная</a>
-            <a href="/staff">Панель работника</a>
-            <a href="/staff/orders">Все заказы</a>
-            <a href="/staff/products">Товары</a>
-        </nav>
-    </div>
+{% extends "base.html" %}
 
-    <main>
-        <h2>Все заказы</h2>
-        
-        <div class="search">
-            <input type="text" placeholder="Поиск по email...">
-            <button>Найти</button>
+{% block title %}Все заказы - СтройМаг{% endblock %}
+
+{% block content %}
+<main>
+    <h2>Все заказы</h2>
+    
+    <div class="search">
+        <input type="text" placeholder="Поиск по email...">
+        <button>Найти</button>
+    </div>
+    
+    <div class="orders-list">
+        <div class="order-card">
+            <h3>Заказ #3664</h3>
+            <p><strong>Клиент:</strong> example@mail.ru</p>
+            <p><strong>Дата:</strong> 15.12.2024 14:30</p>
+            <p><strong>Статус:</strong> В обработке</p>
+            <p><strong>Сумма:</strong> 2 610 руб</p>
+            <a href="/staff/orders/3664" class="btn">Просмотреть</a>
         </div>
         
-        <div class="orders-list">
-            <div class="order-card">
-                <h3>Заказ #3664</h3>
-                <p><strong>Клиент:</strong> example@mail.ru</p>
-                <p><strong>Дата:</strong> 15.12.2024 14:30</p>
-                <p><strong>Статус:</strong> В обработке</p>
-                <p><strong>Сумма:</strong> 2 610 руб</p>
-                <button>Просмотреть</button>
-            </div>
-            
-            <div class="order-card">
-                <h3>Заказ #3655</h3>
-                <p><strong>Клиент:</strong> client@mail.ru</p>
-                <p><strong>Дата:</strong> 15.12.2024 12:15</p>
-                <p><strong>Статус:</strong> Новый</p>
-                <p><strong>Сумма:</strong> 15 240 руб</p>
-                <button>Просмотреть</button>
-            </div>
-            
-            <div class="order-card">
-                <h3>Заказ #3648</h3>
-                <p><strong>Клиент:</strong> buyer@mail.ru</p>
-                <p><strong>Дата:</strong> 14.12.2024 18:45</p>
-                <p><strong>Статус:</strong> Доставлен</p>
-                <p><strong>Сумма:</strong> 8 950 руб</p>
-                <button>Просмотреть</button>
-            </div>
+        <div class="order-card">
+            <h3>Заказ #3655</h3>
+            <p><strong>Клиент:</strong> client@mail.ru</p>
+            <p><strong>Дата:</strong> 15.12.2024 12:15</p>
+            <p><strong>Статус:</strong> Новый</p>
+            <p><strong>Сумма:</strong> 15 240 руб</p>
+            <a href="/staff/orders/3655" class="btn">Просмотреть</a>
         </div>
-    </main>
-
-    <div class="footer">
-        <p>© 2025 СтройМаг</p>
+        
+        <div class="order-card">
+            <h3>Заказ #3648</h3>
+            <p><strong>Клиент:</strong> buyer@mail.ru</p>
+            <p><strong>Дата:</strong> 14.12.2024 18:45</p>
+            <p><strong>Статус:</strong> Доставлен</p>
+            <p><strong>Сумма:</strong> 8 950 руб</p>
+            <a href="/staff/orders/3648" class="btn">Просмотреть</a>
+        </div>
     </div>
-</body>
-</html>
+</main>
+{% endblock %}
