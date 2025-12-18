@@ -16,11 +16,25 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 # 1) Чисто бэк (API)
-@router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
+@router.post("/register",
+             response_model=UserProfile,
+             status_code=status.HTTP_201_CREATED,
+             summary="Регистрация нового пользователя",
+             description="Создание нового пользователя в системе с полной валидацией"
+             )
 async def register(
         user_data: UserCreate,
         db: AsyncSession = Depends(get_db)
 ):
+    """
+    Регистрация нового пользователя с полной валидацией
+
+    **Требования:**
+    - Email должен быть уникальным
+    - Пароль: минимум 8 символов, заглавная, строчная, цифра
+    - Телефон: любой российский формат (будет нормализован в +7 XXX XXX-XX-XX)
+    - Пароли должны совпадать
+    """
     result = await db.execute(select(User).where(User.email == user_data.email))
     if result.scalar_one_or_none():
         raise HTTPException(
@@ -51,11 +65,11 @@ async def register(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Ошибка при создании пользователя"
         )
-    except Exception as e:
+    except Exception:
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ошибка при регистрации: {str(e)}"
+            detail="Ошибка при регистрации"
         )
 
 

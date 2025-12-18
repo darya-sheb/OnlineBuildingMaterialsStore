@@ -1,13 +1,18 @@
+from typing import Optional
+
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import HTMLResponse, RedirectResponse
+from pydantic import ValidationError
 from app.infra.templates import templates
 from app.infra.db import get_db
-from app.features.users.schemas import UserCreate, UserProfile
-from app.models.user import User, UserRole
+from app.features.users.schemas import UserCreateForm
+from app.models.user import UserRole
+from app.core.security import create_access_token, hash_password
+from app.features.auth.service import auth_service
 from sqlalchemy.future import select
-from app.core.security import hash_password, create_access_token, verify_password
-
+from app.models.user import User
+import re
 
 router = APIRouter(prefix="/auth", tags=["authentication-forms"])
 
@@ -20,6 +25,37 @@ async def register_page(request: Request):
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse("auth/login.html", {"request": request})
+
+
+def normalize_phone(phone: Optional[str]) -> Optional[str]:
+    """Нормализует телефон в формат +7 XXX XXX-XX-XX"""
+    if not phone or not phone.strip():
+        return None
+
+    phone = phone.strip()
+
+    # Очищаем от всех нецифровых символов
+    digits = re.sub(r'\D', '', phone)
+
+    if not digits:
+        return None
+
+    # Обрабатываем разные форматы
+    if digits.startswith('7') and len(digits) == 11:
+        # 7XXXXXXXXXX -> +7 XXX XXX-XX-XX
+        return f"+7 {digits[1:4]} {digits[4:7]}-{digits[7:9]}-{digits[9:]}"
+    elif digits.startswith('8') and len(digits) == 11:
+        # 8XXXXXXXXXX -> +7 XXX XXX-XX-XX
+        return f"+7 {digits[1:4]} {digits[4:7]}-{digits[7:9]}-{digits[9:]}"
+    elif digits.startswith('+7') and len(digits) == 12:
+        # +7XXXXXXXXXX -> +7 XXX XXX-XX-XX
+        return f"+7 {digits[2:5]} {digits[5:8]}-{digits[8:10]}-{digits[10:]}"
+    elif len(digits) == 10:
+        # XXXXXXXXXX -> +7 XXX XXX-XX-XX
+        return f"+7 {digits[0:3]} {digits[3:6]}-{digits[6:8]}-{digits[8:]}"
+    else:
+        # Неизвестный формат, возвращаем как есть
+        return phone
 
 
 @router.post("/register/redirect", response_class=RedirectResponse)
@@ -36,75 +72,66 @@ async def register_redirect(
         db: AsyncSession = Depends(get_db)
 ):
     try:
-        user_data = {
-            "email": email,
-            "first_name": first_name,
-            "last_name": last_name,
-            "patronymic": patronymic,
-            "phone": phone,
-            "password": password,
-            "password_confirm": password_confirm,
-            "role": role
-        }
-
-        user_create = UserCreate(**user_data)
-
-        from app.features.auth.router import register as api_register
-        user_profile = await api_register(user_create, db)
-
-        access_token = create_access_token(
-            user_id=user_profile.user_id,
-            role=user_profile.role.value,
-            expires_minutes=120
-        )
-
-        response = RedirectResponse(
-            url="/products/catalog",
-            status_code=303
-        )
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            max_age=120 * 60,
-            samesite="lax"
-        )
-        return response
-
-    except HTTPException as e:
-        return RedirectResponse(
-            url=f"/auth/register?error={str(e.detail)}",
-            status_code=303
-        )
-    except Exception as e:
-        return RedirectResponse(
-            url=f"/auth/register?error=Ошибка сервера: {str(e)}",
-            status_code=303
-        )
-
-@router.post("/login/redirect", response_class=RedirectResponse)
-async def login_redirect(
-        email: str = Form(),
-        password: str = Form(),
-        db: AsyncSession = Depends(get_db)
-):
-    try:
-        result = await db.execute(
-            select(User).where(User.email == email)
-        )
-        user = result.scalar_one_or_none()
-
-        if not user:
-            raise HTTPException(
-                status_code=401,
-                detail="Неверный email или пароль"
+        if password != password_confirm:
+            return RedirectResponse(
+                url=f"/auth/register?error=Пароли не совпадают",
+                status_code=303
             )
 
-        if not verify_password(password, user.password_hash):
-            raise HTTPException(
-                status_code=401,
-                detail="Неверный email или пароль"
+        if len(password) < 6:
+            return RedirectResponse(
+                url=f"/auth/register?error=Пароль должен быть не менее 6 символов",
+                status_code=303
             )
+
+        result = await db.execute(select(User).where(User.email == email))
+        if result.scalar_one_or_none():
+            return RedirectResponse(
+                url=f"/auth/register?error=Пользователь с таким email уже существует",
+                status_code=303
+            )
+
+        normalized_phone = None
+        if phone and phone.strip():
+            normalized_phone = normalize_phone(phone)
+            if normalized_phone and not re.search(r'\d', normalized_phone):
+                return RedirectResponse(
+                    url=f"/auth/register?error=Неверный формат телефона",
+                    status_code=303
+                )
+
+        try:
+            user_form = UserCreateForm(
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                patronymic=patronymic,
+                phone=normalized_phone,
+                password=password,
+                password_confirm=password_confirm,
+                role=role
+            )
+        except ValidationError as e:
+            error_msg = "Неверный формат email"
+            return RedirectResponse(
+                url=f"/auth/register?error={error_msg}",
+                status_code=303
+            )
+
+        hashed_password = hash_password(password)
+        user = User(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            patronymic=patronymic if patronymic else None,
+            phone=normalized_phone,
+            password_hash=hashed_password,
+            role=UserRole(role)
+        )
+
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
 
         access_token = create_access_token(
             user_id=user.user_id,
@@ -127,11 +154,62 @@ async def login_redirect(
 
     except HTTPException as e:
         return RedirectResponse(
-            url=f"/auth/login?error={str(e.detail)}",
+            url=f"/auth/register?error={str(e.detail)}",
             status_code=303
         )
     except Exception as e:
+        # Общая ошибка без деталей (логируем для отладки)
+        print(f"Registration error: {e}")
         return RedirectResponse(
-            url=f"/auth/login?error=Ошибка сервера: {str(e)}",
+            url=f"/auth/register?error=Ошибка при регистрации",
+            status_code=303
+        )
+
+
+@router.post("/login/redirect", response_class=RedirectResponse)
+async def login_redirect(
+        email: str = Form(),
+        password: str = Form(),
+        db: AsyncSession = Depends(get_db)
+):
+    try:
+        user = await auth_service.authenticate_user(
+            db,
+            email,
+            password
+        )
+
+        access_token = create_access_token(
+            user_id=user.user_id,
+            role=user.role.value,
+            expires_minutes=120
+        )
+
+        response = RedirectResponse(
+            url="/products/catalog",
+            status_code=303
+        )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            max_age=120 * 60,
+            samesite="lax"
+        )
+        return response
+
+    except HTTPException as e:
+        if e.status_code == 401:
+            error_message = "Неверный email или пароль"
+        else:
+            error_message = "Ошибка авторизации"
+
+        return RedirectResponse(
+            url=f"/auth/login?error={error_message}",
+            status_code=303
+        )
+    except Exception:
+        return RedirectResponse(
+            url="/auth/login?error=Ошибка сервера",
             status_code=303
         )
