@@ -1,53 +1,39 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мои заказы - СтройМаг</title>
-</head>
-<body>
-    <div class="header">
-        <h1>СтройМаг</h1>
-        <nav>
-            <a href="/">Главная</a>
-            <a href="/catalog">Каталог</a>
-            <a href="/cart">Корзина</a>
-            <a href="/profile">Мой кабинет</a>
-        </nav>
-    </div>
+{% extends "base.html" %}
 
-    <main>
-        <h2>Мои заказы</h2>
-        
-        <div class="orders-list">
-            <div class="order-card">
-                <h3>Заказ #3664</h3>
-                <p><strong>Дата:</strong> 15.12.2024</p>
-                <p><strong>Статус:</strong> В обработке</p>
-                <p><strong>Сумма:</strong> 2 610 руб</p>
-                <button>Подробнее</button>
-            </div>
-            
-            <div class="order-card">
-                <h3>Заказ #3521</h3>
-                <p><strong>Дата:</strong> 10.12.2024</p>
-                <p><strong>Статус:</strong> Доставлен</p>
-                <p><strong>Сумма:</strong> 5 840 руб</p>
-                <button>Подробнее</button>
-            </div>
-            
-            <div class="order-card">
-                <h3>Заказ #3412</h3>
-                <p><strong>Дата:</strong> 05.12.2024</p>
-                <p><strong>Статус:</strong> Отменен</p>
-                <p><strong>Сумма:</strong> 1 200 руб</p>
-                <button>Подробнее</button>
-            </div>
+{% block title %}Мои заказы - СтройМаг{% endblock %}
+
+{% block content %}
+<main>
+    <h2>Мои заказы</h2>
+    
+    <div class="orders-list">
+        <div class="order-card">
+            <h3>Заказ #3664</h3>
+            <p><strong>Дата:</strong> 15.12.2024</p>
+            <p><strong>Статус:</strong> В обработке</p>
+            <p><strong>Сумма:</strong> 2 610 руб</p>
+            <a href="/orders/3664" class="btn">Подробнее</a>
         </div>
-    </main>
-
-    <div class="footer">
-        <p>© 2025 СтройМаг</p>
+        
+        <div class="order-card">
+            <h3>Заказ #3521</h3>
+            <p><strong>Дата:</strong> 10.12.2024</p>
+            <p><strong>Статус:</strong> Доставлен</p>
+            <p><strong>Сумма:</strong> 5 840 руб</p>
+            <a href="/orders/3521" class="btn">Подробнее</a>
+        </div>
+        
+        <div class="order-card">
+            <h3>Заказ #3412</h3>
+            <p><strong>Дата:</strong> 05.12.2024</p>
+            <p><strong>Статус:</strong> Отменен</p>
+            <p><strong>Сумма:</strong> 1 200 руб</p>
+            <a href="/orders/3412" class="btn">Подробнее</a>
+        </div>
     </div>
-</body>
-</html>
+    
+    <div style="margin-top: 20px;">
+        <a href="/profile" class="btn btn-secondary">← Назад в кабинет</a>
+    </div>
+</main>
+{% endblock %}

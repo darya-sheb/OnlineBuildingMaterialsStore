@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Мои заказы - СтройМаг{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2>Мои заказы</h2>
+    
+    <a href="/profile" class="btn btn-outline-secondary mb-3">
+        ← Назад в профиль
+    </a>
+    
+    <div class="orders-list">
+        <div class="order-card card mb-3">
+            <div class="card-body">
+                <h5>Заказ #3664</h5>
+                <p><strong>Дата:</strong> 15.12.2024</p>
+                <p><strong>Статус:</strong> <span class="badge bg-warning">В обработке</span></p>
+                <p><strong>Сумма:</strong> 2 610 руб</p>
+                <a href="/orders/3664" class="btn btn-outline-primary btn-sm">Подробнее</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
