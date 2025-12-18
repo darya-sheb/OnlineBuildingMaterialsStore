@@ -15,7 +15,7 @@ from app.models.product import Product
 def create_app() -> FastAPI:
     app = FastAPI(title="Online Building Materials Store")
 
-    # static/media
+    # static/media - ПОКА ЧТО ЗАКОМИЧЕНО ДЛЯ ТЕСТИРОВАНИЯ ШАБЛОНОВ
     static_dir = Path(settings.STATIC_ROOT)
     if static_dir.exists():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
@@ -34,9 +34,9 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     # HTML pages
-    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-    async def home_page(request: Request):
-        return templates.TemplateResponse("index.html", {"request": request})
+    # @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    # async def home_page(request: Request):
+    #     return templates.TemplateResponse("index.html", {"request": request})
     
     @app.get("/auth/register", response_class=HTMLResponse, include_in_schema=False)
     async def register_page(request: Request):
@@ -46,7 +46,7 @@ def create_app() -> FastAPI:
     async def login_page(request: Request):
         return templates.TemplateResponse("auth/login.html", {"request": request})
     
-    @app.get("/products", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/products/catalog", response_class=HTMLResponse)
     async def products_page(request: Request):
         products = [
             {
@@ -222,39 +222,40 @@ def create_app() -> FastAPI:
     async def profile_page(request: Request):
         return templates.TemplateResponse("users/profile.html", {"request": request})
     
-    @app.get("/orders/my", response_class=HTMLResponse, include_in_schema=False)
-    async def user_orders_page(request: Request):
-        return templates.TemplateResponse("orders/history.html", {"request": request})
+    # @app.get("/orders/my", response_class=HTMLResponse, include_in_schema=False)
+    # async def user_orders_page(request: Request):
+    #     return templates.TemplateResponse("orders/history.html", {"request": request})
     
-    @app.get("/orders/{order_id}", response_class=HTMLResponse, include_in_schema=False)
-    async def order_detail_page(request: Request, order_id: int):
-        return templates.TemplateResponse("orders/detail.html", {
-            "request": request,
-            "order_id": order_id
-        })
+    # @app.get("/orders/{order_id}", response_class=HTMLResponse, include_in_schema=False)
+    # async def order_detail_page(request: Request, order_id: int):
+    #     return templates.TemplateResponse("orders/detail.html", {
+    #         "request": request,
+    #         "order_id": order_id
+    #     })
     
     # Staff
-    @app.get("/staff", response_class=HTMLResponse, include_in_schema=False)
-    async def staff_dashboard_page(request: Request):
-        return templates.TemplateResponse("staff/dashboard.html", {"request": request})
-    
-    @app.get("/staff/orders", response_class=HTMLResponse, include_in_schema=False)
-    async def staff_orders_page(request: Request):
-        return templates.TemplateResponse("staff/orders.html", {"request": request})
-    
-    @app.get("/staff/orders/{order_id}", response_class=HTMLResponse, include_in_schema=False)
-    async def staff_order_detail_page(request: Request, order_id: int):
-        return templates.TemplateResponse("staff/order_detail.html", {
-            "request": request,
-            "order_id": order_id
-        })
-    
-    @app.get("/staff/products", response_class=HTMLResponse, include_in_schema=False)
-    async def staff_products_page(request: Request):
-        return templates.TemplateResponse("staff/products.html", {"request": request})
+    # @app.get("/staff", response_class=HTMLResponse, include_in_schema=False)
+    # async def staff_dashboard_page(request: Request):
+    #     return templates.TemplateResponse("staff/dashboard.html", {"request": request})
+    #
+    # @app.get("/staff/orders", response_class=HTMLResponse, include_in_schema=False)
+    # async def staff_orders_page(request: Request):
+    #     return templates.TemplateResponse("staff/orders.html", {"request": request})
+    #
+    # @app.get("/staff/orders/{order_id}", response_class=HTMLResponse, include_in_schema=False)
+    # async def staff_order_detail_page(request: Request, order_id: int):
+    #     return templates.TemplateResponse("staff/order_detail.html", {
+    #         "request": request,
+    #         "order_id": order_id
+    #     })
+    #
+    # @app.get("/staff/products", response_class=HTMLResponse, include_in_schema=False)
+    # async def staff_products_page(request: Request):
+    #     return templates.TemplateResponse("staff/products.html", {"request": request})
     
     # routers
     from app.features.auth.router import router as auth_router
+    from app.features.auth.form_router import router as auth_form_router
     from app.features.cart.router import router as cart_router
     from app.features.orders.router import router as orders_router
     from app.features.products.form_router import router as products_router
@@ -262,11 +263,12 @@ def create_app() -> FastAPI:
     from app.features.users.router import router as users_router
 
     app.include_router(auth_router)
+    app.include_router(auth_form_router)
     app.include_router(users_router)
     app.include_router(products_router)
     app.include_router(cart_router)
     app.include_router(orders_router)
-    app.include_router(staff_router)
+    # app.include_router(staff_router)
 
     return app
 

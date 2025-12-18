@@ -4,10 +4,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from app.infra.templates import templates
 from app.infra.db import get_db
 from app.features.users.schemas import UserCreate, UserProfile
+from app.features.auth.schemas import UserLogin
 from app.models.user import User, UserRole
 from sqlalchemy.future import select
 from app.core.security import hash_password, create_access_token, verify_password
-
+from app.features.auth.service import auth_service
 
 router = APIRouter(prefix="/auth", tags=["authentication-forms"])
 
@@ -54,7 +55,7 @@ async def register_redirect(
 
         access_token = create_access_token(
             user_id=user_profile.user_id,
-            role=user_profile.role.value,
+            role=user_profile.role,
             expires_minutes=120
         )
 
@@ -82,6 +83,7 @@ async def register_redirect(
             status_code=303
         )
 
+
 @router.post("/login/redirect", response_class=RedirectResponse)
 async def login_redirect(
         email: str = Form(),
@@ -89,22 +91,11 @@ async def login_redirect(
         db: AsyncSession = Depends(get_db)
 ):
     try:
-        result = await db.execute(
-            select(User).where(User.email == email)
+        user = await auth_service.authenticate_user(
+            db,
+            email=email,
+            password=password
         )
-        user = result.scalar_one_or_none()
-
-        if not user:
-            raise HTTPException(
-                status_code=401,
-                detail="Неверный email или пароль"
-            )
-
-        if not verify_password(password, user.password_hash):
-            raise HTTPException(
-                status_code=401,
-                detail="Неверный email или пароль"
-            )
 
         access_token = create_access_token(
             user_id=user.user_id,
@@ -121,17 +112,22 @@ async def login_redirect(
             value=access_token,
             httponly=True,
             max_age=120 * 60,
-            samesite="lax"
+            samesite="lax",
+            secure=True,
+            path="/"
         )
         return response
-
     except HTTPException as e:
+        if e.status_code == 401:
+            error_code = "invalid_credentials"
+        else:
+            error_code = "auth_failed"
         return RedirectResponse(
-            url=f"/auth/login?error={str(e.detail)}",
+            url=f"/auth/login?error={error_code}",
             status_code=303
         )
-    except Exception as e:
+    except Exception:
         return RedirectResponse(
-            url=f"/auth/login?error=Ошибка сервера: {str(e)}",
+            url="/auth/login?error=server_error",
             status_code=303
         )
