@@ -8,7 +8,7 @@ class ProductC(BaseModel):
     name: str
     dimensions: Optional[str] = None
     unit: str
-    price: Decimal
+    price: int
     quantity_available: int = 0
     image_path: Optional[str] = None
 

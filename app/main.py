@@ -258,7 +258,8 @@ def create_app() -> FastAPI:
     from app.features.auth.form_router import router as auth_form_router
     from app.features.cart.router import router as cart_router
     from app.features.orders.router import router as orders_router
-    from app.features.products.form_router import router as products_router
+    from app.features.products.router import router as products_router
+    from app.features.products.form_router import router as products_form_router
     from app.features.staff.router import router as staff_router
     from app.features.users.router import router as users_router
 
@@ -266,6 +267,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_form_router)
     app.include_router(users_router)
     app.include_router(products_router)
+    app.include_router(products_form_router)
     app.include_router(cart_router)
     app.include_router(orders_router)
     # app.include_router(staff_router)
