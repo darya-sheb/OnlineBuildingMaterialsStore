@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request, Depends, HTTPException
+﻿from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 from typing import List
@@ -6,6 +7,7 @@ from app.infra.db import get_db
 from app.features.cart import crud as cart_crud
 from app.features.products import crud as product_crud
 from app.features.cart.schemas import CartItemCreate, CartItemUpdate
+from app.infra.templates import templates
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 
@@ -22,6 +24,16 @@ async def available(db: AsyncSession, product_id: int, req: int):
         raise HTTPException(400, "Недостаточно товара")
     return pr
 
+# HTML 
+@router.get("/page", response_class=HTMLResponse)
+async def cart_page(req: Request):
+    return templates.TemplateResponse("cart/view.html", {"request": req})
+
+@router.get("/confirmation", response_class=HTMLResponse)
+async def confirmation_page(req: Request):
+    return templates.TemplateResponse("cart/confirmation.html", {"request": req})
+
+# API 
 @router.get("/")
 async def get_cart(req: Request, db: AsyncSession = Depends(get_db)):
     ses_id = get_session_id(req)
@@ -47,6 +59,7 @@ async def get_cart(req: Request, db: AsyncSession = Depends(get_db)):
             })
     return {"Data": data, "total_price": sum}
 
+#??
 @router.post("/items/")
 async def add_item(item_data: CartItemCreate, req: Request, db: AsyncSession = Depends(get_db)):
     ses_id = get_session_id(req)
@@ -71,9 +84,8 @@ async def add_item(item_data: CartItemCreate, req: Request, db: AsyncSession = D
         "quantity": itemm["quantity"]
     }
 
-
 @router.put("/items/{item_id}")
-async def update_cart_item(item_id: int, update: CartItemUpdate, req: Request, db: AsyncSession = Depends(get_db)):  # ← AsyncSession
+async def update_cart_item(item_id: int, update: CartItemUpdate, req: Request, db: AsyncSession = Depends(get_db)):
     ses_id = get_session_id(req)
     cart_item = cart_crud.get_cart_item(ses_id, item_id)
     if not cart_item:
@@ -83,7 +95,6 @@ async def update_cart_item(item_id: int, update: CartItemUpdate, req: Request, d
     return {"id": item_id,
         "quantity": update.quantity,
         "total": product.price * update.quantity }
-
 
 @router.delete("/items/{item_id}")
 async def remove_item(item_id: int, req: Request):

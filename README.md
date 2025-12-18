@@ -35,41 +35,73 @@ swagger (если нужен): http://localhost:8000/docs
 - GET /health — healthcheck (для тестов/CI)
 
 ## Auth - features/auth (dev2)
-- GET /auth/register — страница регистрации
-- POST /auth/register — регистрация
-- GET /auth/login — страница логина
+1) чисто бэк:
 - POST /auth/login — логин
-- POST /auth/logout — логаут
+- POST /auth/register — регистрация
+2) Отрисовка страниц при запросе (response_model=HTMLResponse):
+- GET /auth/register — страница регистрации
+- GET /auth/login — страница логина
+3) Редирект страниц (response_model=RedirectResponse)
+- POST /auth/register/redirect - при успехе редирект на страницу каталога, при ошибках редирект на страницу
+регистрации с аргументом error={str(e)} в url
+- POST /auth/login/redirect - то же самое, что в предыдущем пункте
 
-## ЛК клиента - features/users (dev2 + dev4)
-- GET /profile — профиль
-- POST /profile — обновить профиль
+## ЛК клиента - features/users (dev2)
+Только Отрисовка страниц при запросе (response_model=HTMLResponse)
+- GET /profile/me — страница профиля
 
 ## Каталог/товары - features/products (dev5 + dev4)
+1) Чисто бэк
 - GET /products — каталог товаров
-- GET /products/{product_id} — карточка товара
+- POST /products - добавить новый товар в БД - думаю надо в стафф это (уже написано)
+- PUT products/{product_id} - обновить товар
+- delete products/{product_id} - удалить товар - НУЖНО проверить связи между таблицами: 
+если удаляем товар из таблицы, а он уже записан в других таблицах в настройках таблиц должно быть каскадное удаление,
+так же надо будет продумать момент с обновлением странички корзины, где лежит товар, а его удалили
+2) Отрисовка страниц (response_model=HTMLResponse):
+- GET /products/catalog - страница каталога
+3) Редирект страниц (response_model=RedirectResponse)
+- POST /catalog/redirect-to-cart - перенаправление на страницу корзины /cart
 
-## Корзина - features/cart (dev3 + dev4)
-- GET /cart — страница корзины
-- POST /cart/items/add — добавить товар (product_id, quantity)
-- POST /cart/items/{cart_item_id}/set — изменить количество (quantity)
-- POST /cart/items/{cart_item_id}/delete — удалить позицию
+
+## Корзина - features/cart (dev3 + dev4) ???
+1) бэк
+- GET /cart - возврат json с товарами корзины
+- GET /cart/clear - очистить корзину
+- ???
+2) Отрисовка страниц (response_model=HTMLResponse):
+- GET /cart/page — страница корзины
+- GET /cart/confirmation - страница подтверждения заказа и ввода почты
+
+[//]: # (- POST /cart/items/add — добавить товар &#40;product_id, quantity&#41;)
+
+[//]: # (- POST /cart/items/{cart_item_id}/set — изменить количество &#40;quantity&#41;)
+
+[//]: # (- POST /cart/items/{cart_item_id}/delete — удалить позицию)
 
 ## Оформление заказа (dev3 + dev4)
 - GET /orders/checkout — страница ввода email
 - POST /orders/checkout — создать заказ (email -> orders.order_email)
 - GET /orders/success/{order_id} — страница успеха с номером
 
-## Заказы (dev5 + dev4)
-- GET /orders/my — “Мои заказы” (по текущему пользователю)
-- GET /orders/{order_id} — детали заказа (по id) - для работника
 
 ## Staff - features/staff (dev5 + dev4)
-- GET /staff — панель работника
-- GET /staff/products — товары (таблица)
-- GET + POST /staff/products/new — добавить товар (с фото)
-- GET + POST /staff/products/{product_id}/edit — редактировать
-- POST /staff/products/{product_id}/stock — изменить остаток
-- GET /staff/orders — все заказы (берется функция из orders, см. README.md в features/orders)
-- GET /staff/orders/{order_id} — детали
-- GET /staff/orders/search?email=... — поиск заказов по email
+1) чисто бэк:
+- GET /staff/produсts - импорт функции get_products по crud из features.products
+- POST /staff/products/{product_id}/stock — изменить остаток (приход или уход)
+- GET + POST /staff/products/new — добавить товар в бд (с фото - это image_path в модели Product)
+2) Отрисовка страниц (response_model=HTMLResponse):
+- GET /staff — страница панели работника (для Маши: на ней кнопка таблица товаров, кнопка добавить товар, кнопка изменить колво товара)
+- GET /staff/products — таблица товаров
+- GET /staff/products/stock - страница изменения колва (здесь форма: принимаем product_id, поле "приход или уход", delta)
+3) Редирект страниц (response_model=RedirectResponse)
+- POST /staff/products/redirect-to-list - после нажатия кнопки таблица товаров редирект на таблицу товаров /staff/products
+- POST /staff/products/redirect-to-add_item - при нажатии на кнопку новый товар, редирект на страницу с формой добавления
+- POST /staff/products/stock/ - после нажатия на кнопку изменить колво товара редирект на /staff/products/stock
+
+- POST /staff/products/add_item/redirect - редирект на страницу успеха web/templates/staff/add_item_success 
+при нажатии кнопки добавить товар или вывод ошибки
+(после введенных данных в форму)
+(маше: страницу можно сверстать аналогично странице успеха с оформлением заказа,
+только уже надпись "Успешное добавление")
+- POST /staff/products/update_stock/redirect

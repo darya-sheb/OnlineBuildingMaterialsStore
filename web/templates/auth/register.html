@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="форма">
-    <form action="/auth/form/register" method="post">
+    <form action="/auth/register/redirect" method="post">
         <div class="поле">
             <label>Фамилия:</label>
             <input type="text" name="last_name" placeholder="введите фамилию" required>
@@ -40,7 +40,7 @@
             <label>Повторите пароль:</label>
             <input type="password" name="password_confirm" placeholder="повторите пароль" minlength="6" required>
         </div>
-        <input type="hidden" name="role" value="CLIENT">
+        <input type="text" name="role" value="CLIENT">
         <button type="submit" class="тык">Зарегистрироваться</button>
     </form>
 </div>

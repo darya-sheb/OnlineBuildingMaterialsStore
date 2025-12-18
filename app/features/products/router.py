@@ -11,17 +11,20 @@ router = APIRouter(prefix="/products", tags=["products"])
 async def read_products(db: AsyncSession = Depends(get_db)):
     return await product_crud.get_products(db)
 
-@router.get("/{product_id}", response_model=PrRead)
-async def read_product(product_id: int, db: AsyncSession = Depends(get_db)):
-    product = await product_crud.get_product(db, product_id)
-    if not product:
-        raise HTTPException(404, detail="Товар не найден")
-    return product
+#возможно не будем верстать
+# @router.get("/{product_id}", response_model=PrRead)
+# async def read_product(product_id: int, db: AsyncSession = Depends(get_db)):
+#     product = await product_crud.get_product(db, product_id)
+#     if not product:
+#         raise HTTPException(404, detail="Товар не найден")
+#     return product
 
+#не уверена, что долджно быть тут, а не в staff
 @router.post("/", response_model=PrRead, status_code=201)
 async def create_product(product: PrCreate, db: AsyncSession = Depends(get_db)):
     return await product_crud.create_product(db, product)
 
+#то же самое, думаю в staff
 @router.put("/{product_id}", response_model=PrRead)
 async def update_product(product_id: int, product: PrUpdate, db: AsyncSession = Depends(get_db)):
     updated = await product_crud.update_product(db, product_id, product)
@@ -29,6 +32,7 @@ async def update_product(product_id: int, product: PrUpdate, db: AsyncSession = 
         raise HTTPException(404, detail="Товар не найден")
     return updated
 
+#нужно проверить каскадное удаление по таблицам
 @router.delete("/{product_id}", status_code=204)
 async def delete_product(product_id: int, db: AsyncSession = Depends(get_db)):
     if not await product_crud.delete_product(db, product_id):

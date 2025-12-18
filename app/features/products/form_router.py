@@ -19,7 +19,5 @@ async def catalog_page(
     products = result.scalars().all()
 
     return templates.TemplateResponse("catalog.html", {
-        "request": request,
-        "products": products,
-        "user": user
+        "request": request
     })

@@ -1,8 +1,9 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from pydantic import ConfigDict
+from fastapi.responses import HTMLResponse
+from app.infra.templates import templates
 
 from app.features.auth.dependencies import (
     get_current_user,
@@ -23,11 +24,30 @@ from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
-@router.get("/me", response_model=UserProfile)
-async def get_my_profile(
+
+@router.get("/me", response_class=HTMLResponse)
+async def profile_page(
+    request: Request,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Страница профиля пользователя
+    """
+    return templates.TemplateResponse(
+        "users/profile.html",
+        {
+            "request": request,
+            "user": current_user
+        }
+    )
+
+
+@router.get("/me/api", response_model=UserProfile)
+async def get_my_profile_api(
         current_user: User = Depends(get_current_active_user)
 ):
     return current_user
+
 
 @router.put("/me", response_model=UserProfile)
 async def update_my_profile(
@@ -49,6 +69,7 @@ async def update_my_profile(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка при обновлении профиля: {str(e)}"
         )
+
 
 @router.post("/me/change-password")
 async def change_my_password(
@@ -82,6 +103,8 @@ async def change_my_password(
             detail=f"Ошибка при изменении пароля: {str(e)}"
         )
 
+
+# для отладки, смотреть список всех юзеров через апи
 @router.get("/users", response_model=List[UserPublic])
 async def get_all_users(
         skip: int = Query(0, ge=0),
@@ -97,73 +120,85 @@ async def get_all_users(
     )
     users = result.scalars().all()
     return users
+#скорее всего не будем верстать
+# @router.put("/me", response_model=UserProfile)
+# async def update_my_profile(
+#         update_data: UserUpdate,
+#         current_user: User = Depends(get_current_active_user),
+#         db: AsyncSession = Depends(get_db)
+# ):
+#     update_dict = update_data.dict(exclude_unset=True)
+#     for key, value in update_dict.items():
+#         setattr(current_user, key, value)
+#
+#     try:
+#         await db.commit()
+#         await db.refresh(current_user)
+#         return current_user
+#     except Exception as e:
+#         await db.rollback()
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Ошибка при обновлении профиля: {str(e)}"
+#         )
 
-@router.get("/users/{user_id}", response_model=UserProfile)
-async def get_user_by_id(
-        user_id: int,
-        current_user: User = Depends(get_current_active_user),
-        db: AsyncSession = Depends(get_db)
-):
-    if current_user.role != UserRole.STAFF and current_user.user_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Недостаточно прав для просмотра этого профиля"
-        )
+#скорее всего не будем верстать
+# @router.post("/me/change-password")
+# async def change_my_password(
+#         password_data: ChangePasswordRequest,
+#         current_user: User = Depends(get_current_active_user),
+#         db: AsyncSession = Depends(get_db)
+# ):
+#     if not verify_password(password_data.current_password, current_user.password_hash):
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Неверный текущий пароль"
+#         )
+#
+#     try:
+#         UserCreate.validate_password(password_data.new_password)
+#     except ValueError as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail=str(e)
+#         )
+#
+#     current_user.password_hash = hash_password(password_data.new_password)
+#
+#     try:
+#         await db.commit()
+#         return {"message": "Пароль успешно изменен"}
+#     except Exception as e:
+#         await db.rollback()
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Ошибка при изменении пароля: {str(e)}"
+#         )
 
-    result = await db.execute(
-        select(User).where(User.user_id == user_id)
-    )
-    user = result.scalar_one_or_none()
 
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пользователь не найден"
-        )
-
-    return user
-
-@router.put("/users/{user_id}/role", response_model=UserProfile)
-async def change_user_role(
-        user_id: int,
-        new_role: str = Query(..., description="Новая роль (CLIENT или STAFF)"),
-        current_user: User = Depends(get_current_staff),
-        db: AsyncSession = Depends(get_db)
-):
-    try:
-        user_role = UserRole(new_role)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Неверная роль. Допустимые значения: CLIENT, STAFF"
-        )
-
-    if current_user.user_id == user_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Нельзя изменить свою роль"
-        )
-
-    result = await db.execute(
-        select(User).where(User.user_id == user_id)
-    )
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пользователь не найден"
-        )
-
-    user.role = user_role
-
-    try:
-        await db.commit()
-        await db.refresh(user)
-        return user
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ошибка при изменении роли: {str(e)}"
-        )
+# для отладки, смотреть список всех юзеров через апи
+# скорее всего не будем верстать, возможно пригодится для отладки через апи
+# @router.get("/users/{user_id}", response_model=UserProfile)
+# async def get_user_by_id(
+#         user_id: int,
+#         current_user: User = Depends(get_current_active_user),
+#         db: AsyncSession = Depends(get_db)
+# ):
+#     if current_user.role != UserRole.STAFF and current_user.user_id != user_id:
+#         raise HTTPException(
+#             status_code=status.HTTP_403_FORBIDDEN,
+#             detail="Недостаточно прав для просмотра этого профиля"
+#         )
+#
+#     result = await db.execute(
+#         select(User).where(User.user_id == user_id)
+#     )
+#     user = result.scalar_one_or_none()
+#
+#     if not user:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Пользователь не найден"
+#         )
+#
+#     return user]
