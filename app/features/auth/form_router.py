@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.infra.templates import templates
 from app.infra.db import get_db
+from app.features.users.schemas import UserCreate, UserProfile
 from app.models.user import User, UserRole
 from sqlalchemy.future import select
 from app.core.security import hash_password, create_access_token, verify_password
@@ -21,7 +22,6 @@ async def login_page(request: Request):
     return templates.TemplateResponse("auth/login.html", {"request": request})
 
 
-
 @router.post("/register/redirect", response_class=RedirectResponse)
 async def register_redirect(
         request: Request,
@@ -36,42 +36,25 @@ async def register_redirect(
         db: AsyncSession = Depends(get_db)
 ):
     try:
-        if password != password_confirm:
-            raise HTTPException(
-                status_code=400,
-                detail="Пароли не совпадают"
-            )
+        user_data = {
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "patronymic": patronymic,
+            "phone": phone,
+            "password": password,
+            "password_confirm": password_confirm,
+            "role": role
+        }
 
-        result = await db.execute(select(User).where(User.email == email))
-        if result.scalar_one_or_none():
-            raise HTTPException(
-                status_code=400,
-                detail="Пользователь с таким email уже существует"
-            )
+        user_create = UserCreate(**user_data)
 
-        if len(password) < 6:
-            raise HTTPException(
-                status_code=400,
-                detail="Пароль должен содержать минимум 6 символов"
-            )
-        hashed_password = hash_password(password)
-        user = User(
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            patronymic=patronymic,
-            phone=phone,
-            password_hash=hashed_password,
-            role=UserRole(role)
-        )
-
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+        from app.features.auth.router import register as api_register
+        user_profile = await api_register(user_create, db)
 
         access_token = create_access_token(
-            user_id=user.user_id,
-            role=user.role.value,
+            user_id=user_profile.user_id,
+            role=user_profile.role.value,
             expires_minutes=120
         )
 
@@ -99,7 +82,6 @@ async def register_redirect(
             status_code=303
         )
 
-
 @router.post("/login/redirect", response_class=RedirectResponse)
 async def login_redirect(
         email: str = Form(),
@@ -124,14 +106,12 @@ async def login_redirect(
                 detail="Неверный email или пароль"
             )
 
-        # Создание токена
         access_token = create_access_token(
             user_id=user.user_id,
             role=user.role.value,
             expires_minutes=120
         )
 
-        # Редирект на каталог
         response = RedirectResponse(
             url="/products/catalog",
             status_code=303
