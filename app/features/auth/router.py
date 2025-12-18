@@ -9,15 +9,13 @@ from app.features.auth.schemas import Token, UserLogin
 from app.features.users.schemas import UserCreate, UserProfile
 from app.models.user import User, UserRole
 from app.infra.db import get_db
-from fastapi import Request
-from fastapi.responses import HTMLResponse
-from app.infra.templates import templates
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
+# 1) Чисто бэк (API)
 @router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
 async def register(
         user_data: UserCreate,
