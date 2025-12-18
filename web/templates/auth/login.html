@@ -4,15 +4,22 @@
 
 {% block content %}
 <div class="форма">
-    <div class="поле">
-        <label>Email:</label>
-        <input type="email" placeholder="example@mail.ru">
-    </div>
-    <div class="поле">
-        <label>Пароль:</label>
-        <input type="password" name="password" placeholder="введите пароль">
-    </div>
-
-    <button type="submit" class="тык">Войти</button>
+    <form action="/auth/form/login" method="post">
+        <div class="поле">
+            <label>Email:</label>
+            <input type="email" name="username" placeholder="example@mail.ru" required>
+        </div>
+        <div class="поле">
+            <label>Пароль:</label>
+            <input type="password" name="password" placeholder="введите пароль" required>
+        </div>
+        <button type="submit" class="тык">Войти</button>
+    </form>
 </div>
+
+{% if request.query_params.get('error') %}
+<div style="color: red; padding: 10px; margin: 10px; border: 1px solid red;">
+    Ошибка: {{ request.query_params.get('error') }}
+</div>
+{% endif %}
 {% endblock %}
