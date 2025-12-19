@@ -95,9 +95,16 @@ class UserUpdate(BaseModel):
     @classmethod
     def validate_phone(cls, v):
         if v is None:
-            return v
-        return UserBase.validate_phone(v)
+            return None
 
+        try:
+            return UserBase.validate_phone(v)
+        except ValueError:
+            import re
+            cleaned = re.sub(r'\D', '', v)
+            if cleaned:
+                return f"+{cleaned}" if not cleaned.startswith('+') else cleaned
+            return v
 
 class ChangePasswordRequest(BaseModel):
     current_password: str

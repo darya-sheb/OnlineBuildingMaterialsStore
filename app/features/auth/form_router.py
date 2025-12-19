@@ -8,7 +8,7 @@ from app.infra.templates import templates
 from app.infra.db import get_db
 from app.features.users.schemas import UserCreateForm
 from app.models.user import UserRole
-from app.core.security import create_access_token, hash_password
+from app.core.security import create_access_token
 from app.features.auth.service import auth_service
 from sqlalchemy.future import select
 from app.models.user import User
@@ -72,33 +72,8 @@ async def register_redirect(
         db: AsyncSession = Depends(get_db)
 ):
     try:
-        if password != password_confirm:
-            return RedirectResponse(
-                url=f"/auth/register?error=Пароли не совпадают",
-                status_code=303
-            )
-
-        if len(password) < 6:
-            return RedirectResponse(
-                url=f"/auth/register?error=Пароль должен быть не менее 6 символов",
-                status_code=303
-            )
-
-        result = await db.execute(select(User).where(User.email == email))
-        if result.scalar_one_or_none():
-            return RedirectResponse(
-                url=f"/auth/register?error=Пользователь с таким email уже существует",
-                status_code=303
-            )
-
-        normalized_phone = None
-        if phone and phone.strip():
-            normalized_phone = normalize_phone(phone)
-            if normalized_phone and not re.search(r'\d', normalized_phone):
-                return RedirectResponse(
-                    url=f"/auth/register?error=Неверный формат телефона",
-                    status_code=303
-                )
+        # Валидируем данные через Pydantic схему
+        normalized_phone = normalize_phone(phone) if phone and phone.strip() else None
 
         try:
             user_form = UserCreateForm(
@@ -112,12 +87,29 @@ async def register_redirect(
                 role=role
             )
         except ValidationError as e:
-            error_msg = "Неверный формат email"
+            # Извлекаем первую ошибку для отображения
+            errors = e.errors()
+            if errors:
+                error_field = errors[0].get("loc", [""])[0]
+                error_msg = errors[0].get("msg", "Ошибка валидации")
+                return RedirectResponse(
+                    url=f"/auth/register?error={error_msg}",
+                    status_code=303
+                )
             return RedirectResponse(
-                url=f"/auth/register?error={error_msg}",
+                url=f"/auth/register?error=Ошибка валидации",
                 status_code=303
             )
 
+        # Проверяем существование пользователя
+        result = await db.execute(select(User).where(User.email == email))
+        if result.scalar_one_or_none():
+            return RedirectResponse(
+                url=f"/auth/register?error=Пользователь с таким email уже существует",
+                status_code=303
+            )
+
+        from app.core.security import hash_password
         hashed_password = hash_password(password)
         user = User(
             email=email,
@@ -158,7 +150,6 @@ async def register_redirect(
             status_code=303
         )
     except Exception as e:
-        # Общая ошибка без деталей (логируем для отладки)
         print(f"Registration error: {e}")
         return RedirectResponse(
             url=f"/auth/register?error=Ошибка при регистрации",
