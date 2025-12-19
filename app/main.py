@@ -193,17 +193,14 @@ def create_app() -> FastAPI:
     @app.get("/cart", response_class=HTMLResponse, include_in_schema=False)
     async def cart_page(request: Request, db: AsyncSession = Depends(get_db)):
         from app.features.cart.router import get_cart
-        
-        cart_response = await get_cart(request, db)
-        
+        cart_response = await get_cart(request, db)        
         cart_items = cart_response["Data"]
         total = cart_response["total_price"]
-        
         return templates.TemplateResponse("cart/view.html", {
             "request": request,
             "cart_items": cart_items,
             "total": total
-    })
+        })
     
     # Оформление заказа
     @app.get("/orders/checkout", response_class=HTMLResponse, include_in_schema=False)
