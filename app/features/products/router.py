@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from app.infra.db import get_db
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/products", tags=["products"])
 async def read_products(db: AsyncSession = Depends(get_db)):
     return await product_crud.get_products(db)
 
-#возможно не будем верстать
+# возможно не будем верстать
 # @router.get("/{product_id}", response_model=PrRead)
 # async def read_product(product_id: int, db: AsyncSession = Depends(get_db)):
 #     product = await product_crud.get_product(db, product_id)
@@ -21,20 +21,20 @@ async def read_products(db: AsyncSession = Depends(get_db)):
 #         raise HTTPException(404, detail="Товар не найден")
 #     return product
 
-#полезно для staff
+# полезно для staff
 @router.post("/", response_model=PrRead, status_code=201)
 async def create_product(product: PrCreate, db: AsyncSession = Depends(get_db)):
-    return await product_crud.create_product(product)
+    return await product_crud.create_product(db, product)
 
-#то же самое для staff
+# то же самое для staff
 @router.put("/{product_id}", response_model=PrRead)
 async def update_product(product_id: int, product: PrUpdate, db: AsyncSession = Depends(get_db)):
-    updated = await product_crud.update_product(product_id, product, db)
+    updated = await product_crud.update_product(db, product_id, product)
     if not updated:
         raise HTTPException(404, detail="Товар не найден")
     return updated
 
-#нужно проверить каскадное удаление по таблицам
+# нужно проверить каскадное удаление по таблицам
 @router.delete("/{product_id}", status_code=204)
 async def delete_product(product_id: int, db: AsyncSession = Depends(get_db)):
     if not await product_crud.delete_product(db, product_id):

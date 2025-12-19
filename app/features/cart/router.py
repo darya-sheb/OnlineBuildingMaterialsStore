@@ -1,30 +1,29 @@
 ﻿from fastapi import APIRouter, Request, Depends, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-import uuid
 from typing import List
 from app.infra.db import get_db
 from app.features.cart import crud as cart_crud
-from app.features.products import crud as product_crud
 from app.features.cart.schemas import CartItemCreate, CartItemUpdate
+from app.features.auth.dependencies import get_current_user, get_optional_user
 from app.infra.templates import templates
+from app.models.user import User
+from app.models.product import Product
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 
-def get_session_id(req: Request) -> str:
-    if sess_id := req.cookies.get("session_id"):
-        return sess_id
-    return str(uuid.uuid4())
 
-async def available(db: AsyncSession, product_id: int, req: int):
-    pr = await product_crud.get_product(db, product_id)
-    if not pr:
-        raise HTTPException(404, "Товар не найден")
-    if pr.quantity_available < req:
-        raise HTTPException(400, "Недостаточно товара")
-    return pr
+async def check_product_availability(db: AsyncSession, product_id: int, required_quantity: int):
+    """Проверка доступности товара"""
+    from app.features.products import crud as product_crud
+    product = await product_crud.get_product(db, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Товар не найден")
+    if hasattr(product, 'quantity_available') and product.quantity_available < required_quantity:
+        raise HTTPException(status_code=400, detail="Недостаточно товара на складе")
+    return product
 
-# HTML 
+# HTML endpoints
 @router.get("/page", response_class=HTMLResponse)
 async def cart_page(req: Request):
     return templates.TemplateResponse("cart/view.html", {"request": req})
@@ -33,78 +32,138 @@ async def cart_page(req: Request):
 async def confirmation_page(req: Request):
     return templates.TemplateResponse("cart/confirmation.html", {"request": req})
 
-# API 
+# API endpoints
 @router.get("/")
-async def get_cart(req: Request, db: AsyncSession = Depends(get_db)):
-    ses_id = get_session_id(req)
-    items = cart_crud.get_cart_items(ses_id)
-    if not items:
-        return {"Data": [], "total_price": 0}
-    product_ids = [i["product_id"] for i in items]
-    products = await product_crud.get_products_by_ids(db, product_ids)
-    products_dict = {p.product_id: p for p in products}
-    sum=0
-    data = []
-    for i in items:
-        pr = products_dict.get(i["product_id"])
-        if pr:
-            sum += pr.price * i["quantity"]
-            data.append({
-                "id": i["cart_item_id"],
-                "product_id": pr.product_id,
-                "name": pr.name,
-                "price": pr.price,
-                "unit": pr.unit,
-                "quantity": i["quantity"]
-            })
-    return {"Data": data, "total_price": sum}
+async def get_cart(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+):
+    """Получить корзину пользователя"""
+    try:
+        items = await cart_crud.CartCRUD.get_cart_items(db, current_user.user_id)  # ← ИСПРАВЛЯЕМ!
+        
+        if not items:
+            return {"items": [], "total_price": 0}
+        
+        data = []
+        total_price = 0
+        
+        for item in items:
+            if item.product:
+                price_rub = item.product.price / 100
+                item_total = price_rub * item.quantity
+                
+                data.append({
+                    "cart_item_id": item.cart_item_id,
+                    "product_id": item.product.product_id,
+                    "name": item.product.name,
+                    "price": price_rub,
+                    "quantity": item.quantity,
+                    "total": item_total
+                })
+                total_price += item_total
+        
+        return {
+            "items": data,
+            "total_price": total_price
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка при получении корзины: {str(e)}")
 
-#??
 @router.post("/items/")
-async def add_item(item_data: CartItemCreate, req: Request, db: AsyncSession = Depends(get_db)):
-    ses_id = get_session_id(req)
-    product = await available(db, item_data.product_id, item_data.quantity)
-    cart_items = cart_crud.get_cart_items(ses_id)
-    itemsl = None
-    for i in cart_items:
-        if i["product_id"] == item_data.product_id:
-            itemsl = i
-            break
-    if itemsl:
-        new_q = itemsl["quantity"] + item_data.quantity
-        await available(db, item_data.product_id, new_q)
-        itemm = cart_crud.update_cart_item(ses_id, itemsl["cart_item_id"], new_q)
-    else:
-        itemm = cart_crud.add_to_cart(ses_id, item_data.product_id, item_data.quantity)
-    return {
-        "id": itemm["cart_item_id"],
-        "product_id": product.product_id,
-        "name": product.name,
-        "price": product.price,
-        "quantity": itemm["quantity"]
-    }
+async def add_item(
+    item_data: CartItemCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+):
+    """Добавить товар в корзину"""
+    try:
+        product = await check_product_availability(db, item_data.product_id, item_data.quantity)
+        
+        cart_item = await cart_crud.CartCRUD.add_to_cart(db, current_user.user_id, item_data)  # ← ИСПРАВЛЯЕМ!
+        
+        cart_item_with_product = await cart_crud.CartCRUD.get_cart_item(
+            db, current_user.user_id, cart_item.cart_item_id
+        )
+        
+        if not cart_item_with_product or not cart_item_with_product.product:
+            raise HTTPException(status_code=500, detail="Ошибка при получении информации о товаре")
+        
+        price_rub = cart_item_with_product.product.price / 100
+        
+        return {
+            "cart_item_id": cart_item_with_product.cart_item_id,
+            "product_id": cart_item_with_product.product.product_id,
+            "name": cart_item_with_product.product.name,
+            "price": price_rub,
+            "quantity": cart_item_with_product.quantity,
+            "total": price_rub * cart_item_with_product.quantity
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка при добавлении в корзину: {str(e)}")
 
 @router.put("/items/{item_id}")
-async def update_cart_item(item_id: int, update: CartItemUpdate, req: Request, db: AsyncSession = Depends(get_db)):
-    ses_id = get_session_id(req)
-    cart_item = cart_crud.get_cart_item(ses_id, item_id)
-    if not cart_item:
-        raise HTTPException(404, "Товар не найден в корзине")
-    product = await available(db, cart_item["product_id"], update.quantity)
-    cart_crud.update_cart_item(ses_id, item_id, update.quantity)
-    return {"id": item_id,
-        "quantity": update.quantity,
-        "total": product.price * update.quantity }
+async def update_cart_item(
+    item_id: int,
+    update: CartItemUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+):
+    """Обновить количество товара в корзине"""
+    try:
+        cart_item = await cart_crud.CartCRUD.get_cart_item(db, current_user.user_id, item_id)
+        if not cart_item:
+            raise HTTPException(status_code=404, detail="Товар не найден в корзине")
+        
+        product = await check_product_availability(db, cart_item.product_id, update.quantity)
+        
+        updated_item = await cart_crud.CartCRUD.update_cart_item(
+            db, current_user.user_id, item_id, update.quantity
+        )
+        
+        if not updated_item:
+            return {"deleted": item_id}
+        
+        price_rub = product.price / 100
+        
+        return {
+            "cart_item_id": item_id,
+            "product_id": product.product_id,
+            "quantity": update.quantity,
+            "total": price_rub * update.quantity
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка при обновлении корзины: {str(e)}")
 
 @router.delete("/items/{item_id}")
-async def remove_item(item_id: int, req: Request):
-    ses_id = get_session_id(req)
-    if cart_crud.remove_from_cart(ses_id, item_id):
+async def remove_item(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+):
+    """Удалить товар из корзины"""
+    try:
+        success = await cart_crud.CartCRUD.remove_from_cart(db, current_user.user_id, item_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Товар не найден в корзине")
         return {"deleted": item_id}
-    raise HTTPException(404, "Товар не найден в корзине")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка при удалении из корзины: {str(e)}")
 
 @router.post("/clear")
-async def clear_cart(req: Request):
-    ses_id = get_session_id(req)
-    cart_crud.clear_cart(ses_id)
-    return {"cleared": True}
+async def clear_cart(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+):
+    """Очистить корзину"""
+    try:
+        success = await cart_crud.CartCRUD.clear_cart(db, current_user.user_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Корзина не найдена")
+        return {"cleared": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка при очистке корзины: {str(e)}")
