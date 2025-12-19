@@ -3,6 +3,7 @@
 {% block title %}Регистрация в СтройМаг{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="page-center">
     <div class="form-container">
         <h2>Регистрация в СтройМаг</h2>
@@ -46,6 +47,49 @@
             <button type="submit" class="тык">Зарегистрироваться</button>
         </form>
     </div>
+=======
+<div class="форма">
+    <form action="/auth/register/redirect" method="post">
+        <div class="поле">
+            <label>Фамилия:</label>
+            <input type="text" name="last_name" placeholder="введите фамилию" required>
+        </div>
+        <div class="поле">
+            <label>Имя:</label>
+            <input type="text" name="first_name" placeholder="введите имя" required>
+        </div>
+        <div class="поле">
+            <label>Отчество:</label>
+            <input type="text" name="patronymic" placeholder="введите отчество">
+        </div>
+        <div class="поле">
+            <label>Почта:</label>
+            <input type="email" name="email" placeholder="example@yandex.com" required>
+        </div>
+        <div class="поле">
+            <label>Мобильный телефон:</label>
+            <input
+                type="tel"
+                name="phone"
+                placeholder="+7 999 123-45-67"
+                pattern="\+7\s[0-9]{3}\s[0-9]{3}-[0-9]{2}-[0-9]{2}"
+                title="Формат: +7 XXX XXX-XX-XX (обязательно с плюсом и дефисами)"
+                required
+            >
+        </div>
+        <div class="поле">
+            <label>Пароль:</label>
+            <input type="password" name="password" placeholder="введите пароль" minlength="6" required>
+        </div>
+        <div class="поле">
+            <label>Повторите пароль:</label>
+            <input type="password" name="password_confirm" placeholder="повторите пароль" minlength="6" required>
+        </div>
+        <input type="text" name="role" value="CLIENT">
+        <button type="submit" class="тык">Зарегистрироваться</button>
+    </form>
+</div>
+>>>>>>> c3bb2d2aff40265e25611fdd30d53c399fc81464
 
     {% if request.query_params.get('error') %}
     <div style="color: red; padding: 10px; margin: 10px 0; border: 1px solid red; border-radius: 4px;">

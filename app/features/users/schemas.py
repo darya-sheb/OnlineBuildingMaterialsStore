@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 import re
 
+
 class UserBase(BaseModel):
     email: EmailStr
     first_name: str
@@ -13,9 +14,27 @@ class UserBase(BaseModel):
     @field_validator('phone')
     @classmethod
     def validate_phone(cls, v):
-        right_pattern_of_phone_number = r'^\+7\s?\d{3}\s?\d{3}-\d{2}-\d{2}$'
-        if not re.match(right_pattern_of_phone_number, v):
-            raise ValueError('Номер телефона неверный, должен быть формат: +7 XXX XXX-XX-XX')
+        if v is None or v == "":
+            return None
+
+        # Очищаем номер от всех нецифровых символов
+        cleaned = re.sub(r'\D', '', v)
+
+        # Проверяем российские форматы
+        if cleaned.startswith('7') and len(cleaned) == 11:
+            # Формат: 7XXXXXXXXXX -> конвертируем в +7 XXX XXX-XX-XX
+            return f"+7 {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
+        elif cleaned.startswith('8') and len(cleaned) == 11:
+            # Формат: 8XXXXXXXXXX -> конвертируем в +7 XXX XXX-XX-XX
+            return f"+7 {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
+        elif cleaned.startswith('+7') and len(cleaned) == 12:
+            # Формат: +7XXXXXXXXXX -> конвертируем в +7 XXX XXX-XX-XX
+            return f"+7 {cleaned[2:5]} {cleaned[5:8]}-{cleaned[8:10]}-{cleaned[10:]}"
+        elif len(cleaned) == 10:
+            # Формат без кода страны: XXXXXXXXXX -> добавляем +7
+            return f"+7 {cleaned[0:3]} {cleaned[3:6]}-{cleaned[6:8]}-{cleaned[8:]}"
+        else:
+            raise ValueError('Номер телефона должен содержать 10-11 цифр (Россия)')
         return v
 
 
@@ -34,24 +53,36 @@ class UserCreate(UserBase):
     @field_validator('password')
     @classmethod
     def validate_password(cls, v):
+        errors = []
         if len(v) < 8:
-            raise ValueError('Пароль должен быть не менее 8 символов')
+            errors.append('не менее 8 символов')
         if not re.search(r'[A-Z]', v):
-            raise ValueError('Пароль должен содержать хотя бы одну заглавную букву')
+            errors.append('хотя бы одну заглавную букву')
         if not re.search(r'[a-z]', v):
-            raise ValueError('Пароль должен содержать хотя бы одну строчную букву')
+            errors.append('хотя бы одну строчную букву')
         if not re.search(r'\d', v):
-            raise ValueError('Пароль должен содержать хотя бы одну цифру')
+            errors.append('хотя бы одну цифру')
+
+        if errors:
+            raise ValueError(f'Пароль должен содержать: {", ".join(errors)}')
         return v
 
     @model_validator(mode='after')
     def validate_passwords_match(self):
-        password = self.password
-        password_confirm = self.password_confirm
-
-        if password != password_confirm:
+        if self.password != self.password_confirm:
             raise ValueError('Пароли не совпадают')
         return self
+
+
+class UserCreateForm(BaseModel):
+    email: EmailStr
+    first_name: str
+    last_name: str
+    patronymic: Optional[str] = None
+    phone: Optional[str] = None
+    password: str
+    password_confirm: str
+    role: str = "CLIENT"
 
 
 class UserUpdate(BaseModel):
@@ -64,9 +95,16 @@ class UserUpdate(BaseModel):
     @classmethod
     def validate_phone(cls, v):
         if v is None:
-            return v
-        return UserBase.validate_phone(v)
+            return None
 
+        try:
+            return UserBase.validate_phone(v)
+        except ValueError:
+            import re
+            cleaned = re.sub(r'\D', '', v)
+            if cleaned:
+                return f"+{cleaned}" if not cleaned.startswith('+') else cleaned
+            return v
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
@@ -96,6 +134,7 @@ class UserPublic(BaseModel):
 __all__ = [
     "UserBase",
     "UserCreate",
+    "UserCreateForm",
     "UserUpdate",
     "ChangePasswordRequest",
     "UserInDB",
