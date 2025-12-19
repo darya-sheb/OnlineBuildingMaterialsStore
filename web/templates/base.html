@@ -8,13 +8,13 @@
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-    {% include 'header.html' %}
-    
-    <main class="container mt-4">
-        {% block content %}{% endblock %}
-    </main>
-    
-    {% include 'footer.html' %}
+    <div class="page-wrapper">
+        {% include 'header.html' %}
+        <main class="container mt-4">
+            {% block content %}{% endblock %}
+        </main>
+        {% include 'footer.html' %}
+    </div>
     <script src="/static/js/cart.js"></script>
 </body>
 </html>

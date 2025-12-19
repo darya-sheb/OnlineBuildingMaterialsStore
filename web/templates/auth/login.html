@@ -3,23 +3,26 @@
 {% block title %}Вход в СтройМаг{% endblock %}
 
 {% block content %}
-<div class="форма">
-    <form action="/auth/form/login" method="post">
-        <div class="поле">
-            <label>Email:</label>
-            <input type="email" name="username" placeholder="example@mail.ru" required>
-        </div>
-        <div class="поле">
-            <label>Пароль:</label>
-            <input type="password" name="password" placeholder="введите пароль" required>
-        </div>
-        <button type="submit" class="тык">Войти</button>
-    </form>
-</div>
+<div class="page-center">
+    <div class="form-container">
+        <h2>Вход в СтройМаг</h2>
+        <form action="/auth/form/login" method="post">
+            <div class="поле">
+                <label>Email:</label>
+                <input type="email" name="username" placeholder="example@mail.ru" required>
+            </div>
+            <div class="поле">
+                <label>Пароль:</label>
+                <input type="password" name="password" placeholder="введите пароль" required>
+            </div>
+            <button type="submit" class="btn btn-custom">Войти</button>
+        </form>
 
-{% if request.query_params.get('error') %}
-<div style="color: red; padding: 10px; margin: 10px; border: 1px solid red;">
-    Ошибка: {{ request.query_params.get('error') }}
+        {% if request.query_params.get('error') %}
+        <div class="alert alert-error">
+            Ошибка: {{ request.query_params.get('error') }}
+        </div>
+        {% endif %}
+    </div>
 </div>
-{% endif %}
 {% endblock %}
