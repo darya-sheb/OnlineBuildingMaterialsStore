@@ -96,7 +96,7 @@ async def register_redirect(
 
         access_token = create_access_token(
             user_id=user_profile.user_id,
-            role=user_profile.role.value,
+            role=user_profile.role,
             expires_minutes=120
         )
 
@@ -167,7 +167,9 @@ async def login_redirect(
             value=token_data.access_token,
             httponly=True,
             max_age=120 * 60,
-            samesite="lax"
+            samesite="lax",
+            secure=True,
+            path="/"
         )
         return response
 

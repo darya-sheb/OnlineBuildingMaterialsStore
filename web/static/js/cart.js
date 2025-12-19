@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.addEventListener('click', async function (e) {
             e.preventDefault();
-            
+
             const productId = this.getAttribute('data-product-id');
             const input = document.querySelector(`input[data-product-id="${productId}"]`);
             const quantity = input ? parseInt(input.value) || 1 : 1;

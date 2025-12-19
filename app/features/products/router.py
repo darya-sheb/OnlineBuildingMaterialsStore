@@ -7,6 +7,8 @@ from app.features.products.schemas import PrRead, PrCreate, PrUpdate
 
 router = APIRouter(prefix="/products", tags=["products"])
 
+
+
 @router.get("/", response_model=List[PrRead])
 async def read_products(db: AsyncSession = Depends(get_db)):
     return await product_crud.get_products(db)
@@ -19,15 +21,15 @@ async def read_products(db: AsyncSession = Depends(get_db)):
 #         raise HTTPException(404, detail="Товар не найден")
 #     return product
 
-#не уверена, что долджно быть тут, а не в staff
+#полезно для staff
 @router.post("/", response_model=PrRead, status_code=201)
 async def create_product(product: PrCreate, db: AsyncSession = Depends(get_db)):
-    return await product_crud.create_product(db, product)
+    return await product_crud.create_product(product)
 
-#то же самое, думаю в staff
+#то же самое для staff
 @router.put("/{product_id}", response_model=PrRead)
 async def update_product(product_id: int, product: PrUpdate, db: AsyncSession = Depends(get_db)):
-    updated = await product_crud.update_product(db, product_id, product)
+    updated = await product_crud.update_product(product_id, product, db)
     if not updated:
         raise HTTPException(404, detail="Товар не найден")
     return updated
