@@ -1,9 +1,12 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi.responses import HTMLResponse
 from app.infra.templates import templates
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+import traceback
 
 from app.features.auth.dependencies import (
     get_current_user,
@@ -55,19 +58,79 @@ async def update_my_profile(
         current_user: User = Depends(get_current_active_user),
         db: AsyncSession = Depends(get_db)
 ):
-    update_dict = update_data.dict(exclude_unset=True)
-    for key, value in update_dict.items():
-        setattr(current_user, key, value)
-
     try:
+        print(f"DEBUG: Starting profile update for user_id={current_user.user_id}")
+        print(f"DEBUG: Update data: {update_data}")
+
+        # Используем model_dump для Pydantic v2
+        update_dict = update_data.model_dump(exclude_unset=True)
+        print(f"DEBUG: Update dict: {update_dict}")
+
+        if not update_dict:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Нет данных для обновления"
+            )
+
+        # Обновляем поля
+        updated_fields = []
+        for key, value in update_dict.items():
+            print(f"DEBUG: Setting {key} = {value}")
+            if hasattr(current_user, key):
+                old_value = getattr(current_user, key)
+                setattr(current_user, key, value)
+                updated_fields.append(f"{key}: {old_value} -> {value}")
+            else:
+                print(f"WARNING: User object has no attribute {key}")
+
+        print(f"DEBUG: Fields changed: {updated_fields}")
+        print(f"DEBUG: User before commit: {current_user.__dict__}")
+
         await db.commit()
+        print("DEBUG: Commit successful")
+
+        # Обновляем объект из БД
         await db.refresh(current_user)
+        print(f"DEBUG: User after refresh: {current_user.__dict__}")
+
         return current_user
-    except Exception as e:
+
+    except HTTPException:
+        raise
+
+    except ValidationError as e:
         await db.rollback()
+        print(f"VALIDATION ERROR: {e.errors()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ошибка валидации: {e.errors()}"
+        )
+
+    except IntegrityError as e:
+        await db.rollback()
+        print(f"INTEGRITY ERROR: {str(e)}")
+        # Возможно, дублирование email или других уникальных полей
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ошибка целостности данных (возможно, email уже занят)"
+        )
+
+    except SQLAlchemyError as e:
+        await db.rollback()
+        print(f"SQLALCHEMY ERROR: {str(e)}")
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ошибка при обновлении профиля: {str(e)}"
+            detail=f"Ошибка базы данных: {str(e)}"
+        )
+
+    except Exception as e:
+        await db.rollback()
+        print(f"UNEXPECTED ERROR: {type(e).__name__}: {str(e)}")
+        traceback.print_exc()  # Печатаем полный traceback
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Неожиданная ошибка: {type(e).__name__}"
         )
 
 

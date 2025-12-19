@@ -15,12 +15,20 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-# 1) Чисто бэк (API)
-@router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
+# 1) Чисто бэк (API) - основная функция регистрации
+@router.post("/register",
+             response_model=UserProfile,
+             status_code=status.HTTP_201_CREATED,
+             summary="Регистрация нового пользователя",
+             description="Создание нового пользователя в системе с полной валидацией"
+             )
 async def register(
         user_data: UserCreate,
         db: AsyncSession = Depends(get_db)
 ):
+    """
+    Регистрация нового пользователя с полной валидацией
+    """
     result = await db.execute(select(User).where(User.email == user_data.email))
     if result.scalar_one_or_none():
         raise HTTPException(
@@ -35,7 +43,7 @@ async def register(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         patronymic=user_data.patronymic,
-        phone=user_data.phone,
+        phone=user_data.phone,  # Уже нормализовано в валидаторе UserCreate
         password_hash=hashed_password,
         role=UserRole(user_data.role)
     )
@@ -51,14 +59,15 @@ async def register(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Ошибка при создании пользователя"
         )
-    except Exception as e:
+    except Exception:
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ошибка при регистрации: {str(e)}"
+            detail="Ошибка при регистрации"
         )
 
 
+# 2) Login функции - оставляем как есть
 @router.post("/login", response_model=Token)
 async def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
@@ -126,6 +135,7 @@ async def login_json(
         )
 
 
+# 3) Дополнительные функции
 @router.post("/verify-token")
 async def verify_token(token: str = Depends(oauth2_scheme)):
     try:
