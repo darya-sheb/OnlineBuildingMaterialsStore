@@ -88,7 +88,7 @@ def create_app() -> FastAPI:
             {
                 "id": 5,
                 "name": "Цемент М500 Д0 (50 кг)",
-                "manufacturer": "Евроцемент",
+                "manufacturer": "Цементум",
                 "price": 448,
                 "unit": "мешок",
                 "quantity_available": 124,
