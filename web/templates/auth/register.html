@@ -7,56 +7,56 @@
     <div class="form-container">
         <h2>Регистрация в СтройМаг</h2>
         <form action="/auth/form/register" method="post">
-            <div class="поле">
+            <div class="form-group">
                 <label>Фамилия:</label>
                 <input type="text" name="last_name" placeholder="введите фамилию" required>
             </div>
-            <div class="поле">
+            <div class="form-group">
                 <label>Имя:</label>
                 <input type="text" name="first_name" placeholder="введите имя" required>
             </div>
-            <div class="поле">
+            <div class="form-group">
                 <label>Отчество:</label>
                 <input type="text" name="patronymic" placeholder="введите отчество">
             </div>
-            <div class="поле">
+            <div class="form-group">
                 <label>Почта:</label>
                 <input type="email" name="email" placeholder="example@yandex.com" required>
             </div>
-            <div class="поле">
+            <div class="form-group">
                 <label>Мобильный телефон:</label>
                 <input
                     type="tel"
                     name="phone"
-                    placeholder="+7 999 123-45-67"
+                    placeholder="+7 XXX XXX-XX-XX"
                     pattern="\+7\s[0-9]{3}\s[0-9]{3}-[0-9]{2}-[0-9]{2}"
-                    title="Формат: +7 XXX XXX-XX-XX (обязательно с плюсом и дефисами)"
+                    title="Формат: +7 XXX XXX-XX-XX"
                     required
                 >
             </div>
-            <div class="поле">
+            <div class="form-group">
                 <label>Пароль:</label>
-                <input type="password" name="password" placeholder="введите пароль" minlength="6" required>
+                <input type="password" name="password" placeholder="не менее 6 символов" minlength="6" required>
             </div>
-            <div class="поле">
+            <div class="form-group">
                 <label>Повторите пароль:</label>
                 <input type="password" name="password_confirm" placeholder="повторите пароль" minlength="6" required>
             </div>
             <input type="hidden" name="role" value="CLIENT">
-            <button type="submit" class="тык">Зарегистрироваться</button>
+            <button type="submit" class="btn btn-custom">Зарегистрироваться</button>
         </form>
-    </div>
 
-    {% if request.query_params.get('error') %}
-    <div style="color: red; padding: 10px; margin: 10px 0; border: 1px solid red; border-radius: 4px;">
-        Ошибка: {{ request.query_params.get('error') }}
-    </div>
-    {% endif %}
+        {% if request.query_params.get('error') %}
+        <div class="alert alert-error">
+            Ошибка: {{ request.query_params.get('error') }}
+        </div>
+        {% endif %}
 
-    {% if request.query_params.get('message') %}
-    <div style="color: green; padding: 10px; margin: 10px 0; border: 1px solid green; border-radius: 4px;">
-        {{ request.query_params.get('message') }}
+        {% if request.query_params.get('message') %}
+        <div class="alert alert-success">
+            {{ request.query_params.get('message') }}
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}

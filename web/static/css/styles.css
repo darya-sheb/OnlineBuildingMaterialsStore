@@ -40,15 +40,6 @@ main.container {
     padding-right: 15px !important;
 }
 
-.alert-error {
-    color: red;
-    background-color: #ffeeee;
-    border: 1px solid red;
-    padding: 10px;
-    margin-top: 16px;
-    border-radius: 4px;
-}
-
 .header {
     display: flex;
     justify-content: center;
@@ -88,7 +79,7 @@ main.container {
     padding: 3px 0;
     background-color: #ededed;
     border-top: 3px solid #dddddd;
-    color: purple;
+    color: #66278f;
     font-size: 0.9rem;
     margin-top: 40px
 }
@@ -179,7 +170,11 @@ main.container {
     border-radius: 4px;
     font-weight: 500;
     cursor: pointer;
-    margin-top: 12px;
+    margin-top: 18px;
+}
+
+.btn-custom:hover {
+    background-color: #7e3e9c !important;
 }
 
 main.container {
@@ -200,4 +195,83 @@ html, body {
 
 .page-wrapper > main {
     flex: 1;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="text"]:focus {
+    outline: none;
+    border-color: #6a0dad;
+    box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.15);
+}
+
+label {
+    display: block;
+    margin: 12px 0 6px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group {
+    margin: 16px 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #6a0dad;
+    box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.15);
+}
+
+.alert {
+    padding: 12px;
+    margin: 20px 0 0;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.alert-error {
+    background-color: #ffeeee;
+    color: #c00;
+    border: 1px solid #f8b0b0;
+}
+
+.alert-success {
+    background-color: #eefff0;
+    color: #080;
+    border: 1px solid #b0f8b0;
 }
