@@ -2,7 +2,11 @@
     <h1>СтройМаг</h1>
     <nav>
         <a href="/products/catalog">Каталог</a>
-        <a href="/cart">Корзина</a>
-        <a href="/auth/login">Войти</a>
+        {% if user %}
+            <a href="/profile">Профиль</a>
+            <a href="/cart">Корзина</a>
+        {% else %}
+            <a href="/auth/login">Войти</a>
+        {% endif %}
     </nav>
 </div>
