@@ -10,10 +10,10 @@
     <div class="product-card">
         <div class="product-image">
             {% if product.image_path %}
-                <img src="{{ product.image_path }}" alt="Фото {{ product.name }}" width="200">
+                <img src="/media/{{ product.image_path }}" alt="Фото {{ product.name }}" width="200">
             {% else %}
                 <div class="no-image-placeholder">
-                    Нет фото
+                    <img src="/media/no_photo_data.jpg" alt="Фото {{ product.name }}" width="200">
                 </div>
             {% endif %}
         </div>
