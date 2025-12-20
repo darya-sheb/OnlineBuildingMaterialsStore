@@ -7,7 +7,7 @@
 
 {% if not cart_items %}
     <p>Ваша корзина пуста :(</p>
-    <a href="/products" class="btn btn-secondary">Перейти в каталог</a>
+    <a href="products/catalog" class="btn btn-secondary">Перейти в каталог</a>
 {% else %}
     <div class="cart-items">
         {% for item in cart_items %}
