@@ -191,7 +191,6 @@ def create_app() -> FastAPI:
         })
 
     @app.get("/cart", response_class=HTMLResponse, include_in_schema=False)
-<<<<<<< HEAD
     async def cart_page(request: Request, db: AsyncSession = Depends(get_db)):
         from app.features.cart.router import get_cart
         cart_response = await get_cart(request, db)        
@@ -202,10 +201,6 @@ def create_app() -> FastAPI:
             "cart_items": cart_items,
             "total": total
         })
-=======
-    async def cart_page(request: Request):
-        return templates.TemplateResponse("cart/view.html", {"request": request})
->>>>>>> c3bb2d2aff40265e25611fdd30d53c399fc81464
     
     # Оформление заказа
     @app.get("/orders/checkout", response_class=HTMLResponse, include_in_schema=False)
