@@ -14,6 +14,7 @@ from .dependencies import (
 
 __all__ = [
     "router",
+    "form_router",
     "auth_service",
     "AuthService",
     "Token",

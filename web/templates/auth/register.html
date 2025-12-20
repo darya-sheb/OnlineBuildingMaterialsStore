@@ -3,6 +3,7 @@
 {% block title %}Регистрация в СтройМаг{% endblock %}
 
 {% block content %}
+
 <div class="page-center">
     <div class="form-container">
         <h2>Регистрация в СтройМаг</h2>
@@ -45,6 +46,7 @@
             <input type="hidden" name="role" value="CLIENT">
             <button type="submit" class="btn btn-custom">Зарегистрироваться</button>
         </form>
+    </div>
 
         {% if request.query_params.get('error') %}
         <div class="alert alert-error">
