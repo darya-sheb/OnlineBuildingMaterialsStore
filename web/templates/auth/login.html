@@ -8,15 +8,19 @@
     <div class="form-container">
         <h2>Вход в СтройМаг</h2>
         <form action="/auth/form/login" method="post">
-            <div class="поле">
+            <div class="form-group">
                 <label>Email:</label>
-                <input type="email" name="username" placeholder="example@mail.ru" required>
+                <input type="email" name="email" placeholder="example@mail.ru" required>
             </div>
-            <div class="поле">
+            <div class="form-group">
                 <label>Пароль:</label>
                 <input type="password" name="password" placeholder="введите пароль" required>
             </div>
             <button type="submit" class="btn btn-custom">Войти</button>
+
+            <div class="login-footer">
+                Нет аккаунта? <a href="/auth/register">Зарегистрироваться</a>
+            </div>
         </form>
 
         {% if request.query_params.get('error') %}

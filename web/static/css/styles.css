@@ -169,8 +169,9 @@ main.container {
     padding: 10px 12px;
     border-radius: 4px;
     font-weight: 500;
+    font-size: 15px !important;
     cursor: pointer;
-    margin-top: 18px;
+    margin-top: 10px;
 }
 
 .btn-custom:hover {
@@ -274,4 +275,21 @@ label {
     background-color: #eefff0;
     color: #080;
     border: 1px solid #b0f8b0;
+}
+
+.login-footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.login-footer a {
+    color: #7e3e9c;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
 }
