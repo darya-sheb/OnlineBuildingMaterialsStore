@@ -176,7 +176,7 @@ main.container {
     font-weight: 500;
     font-size: 15px !important;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 12px;
 }
 
 .btn-custom:hover {
@@ -296,7 +296,7 @@ label {
 }
 
 .login-footer a:hover {
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .product-card {
@@ -318,17 +318,15 @@ label {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
-    background: white;
 }
 
 .table th,
 .table td {
-    padding: 12px;
-    border: 1px solid red; /* ← одна общая граница */
-    text-align: left;
+    border: 2px solid #bdbdbd !important;
 }
 
-/* Убираем любые внешние отступы или фоны */
-.table tr {
-    background: transparent;
+a.btn-custom {
+    text-decoration: none;
+    margin-top: 15px;
+    display: inline-block;
 }
