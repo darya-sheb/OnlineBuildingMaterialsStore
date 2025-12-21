@@ -313,3 +313,22 @@ label {
 .product-actions {
     margin-top: auto;
 }
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+}
+
+.table th,
+.table td {
+    padding: 12px;
+    border: 1px solid red; /* ← одна общая граница */
+    text-align: left;
+}
+
+/* Убираем любые внешние отступы или фоны */
+.table tr {
+    background: transparent;
+}
