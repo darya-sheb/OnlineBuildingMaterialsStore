@@ -10,11 +10,12 @@
     <div class="product-card">
         <div class="product-image">
             {% if product.image_path %}
-                <img src="/media/{{ product.image_path }}" alt="Фото {{ product.name }}" width="200">
+            <img src=/media/{{ product.image_path }}" alt="Фото {{ product.name }}" width="200"
+                 onerror="this.onerror=null; this.src='/media/no_image_data.jpg';">
             {% else %}
-                <div class="no-image-placeholder">
-                    <img src="/media/no_photo_data.jpg" alt="Фото {{ product.name }}" width="200">
-                </div>
+            <div class="no-image-placeholder">
+                <img src="/media/no_image_data.jpg" alt="Фото {{ product.name }}" width="200">
+            </div>
             {% endif %}
         </div>
         <h4 class="product-title">{{ product.name }}</h4>
@@ -25,7 +26,8 @@
 
         <div class="product-controls">
             <label><strong>Количество:</strong></label>
-            <input type="number" class="quantity-input" value="1" min="1" max="{{ product.quantity_available }}" data-product-id="{{ product.id }}">
+            <input type="number" class="quantity-input" value="1" min="1" max="{{ product.quantity_available }}"
+                   data-product-id="{{ product.id }}">
             <span>{{ product.unit }}</span>
         </div>
 
