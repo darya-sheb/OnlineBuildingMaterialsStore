@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import HTTPException, status
 from app.core.security import verify_password, decode_access_token, hash_password
+from app.core.encryption import encryption_service
 from app.models.user import User
 from app.features.users.schemas import UserCreate
 import re
@@ -14,10 +15,9 @@ class AuthService:
             email: str,
             password: str
     ):
-        """Аутентификация пользователя"""
-        result = await db.execute(
-            select(User).where(User.email == email)
-        )
+        """Аутентификация пользователя по хэшу email"""
+        email_hash = encryption_service.hash_email(email)
+        result = await db.execute(select(User).where(User.email_hash == email_hash))
         user = result.scalar_one_or_none()
 
         if not user:
@@ -39,29 +39,33 @@ class AuthService:
             db: AsyncSession,
             user_data: UserCreate
     ):
-        """Регистрация нового пользователя"""
-        # Проверяем существование пользователя
-        result = await db.execute(select(User).where(User.email == user_data.email))
+        """Регистрация нового пользователя с шифрованием данных"""
+        email_hash = encryption_service.hash_email(user_data.email)
+
+        result = await db.execute(select(User).where(User.email_hash == email_hash))
         if result.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Пользователь с таким email уже существует"
             )
 
-        # Нормализуем телефон если он есть
         phone = user_data.phone
         if phone:
             phone = self.normalize_phone(phone)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Телефон обязателен"
+            )
 
-        # Создаем пользователя
         hashed_password = hash_password(user_data.password)
-        user = User(
-            email=user_data.email,
+        user = User.create_with_encryption(
             first_name=user_data.first_name,
             last_name=user_data.last_name,
-            patronymic=user_data.patronymic,
             phone=phone,
+            email=user_data.email,
             password_hash=hashed_password,
+            patronymic=user_data.patronymic,
             role=user_data.role
         )
 
@@ -70,11 +74,11 @@ class AuthService:
             await db.commit()
             await db.refresh(user)
             return user
-        except Exception:
+        except Exception as e:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Ошибка при регистрации"
+                detail=f"Ошибка при регистрации: {str(e)}"
             )
 
     def normalize_phone(self, phone: str) -> str:
@@ -104,30 +108,12 @@ class AuthService:
         """Верификация JWT токена"""
         try:
             return decode_access_token(token)
-        except  Exception:
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Неверные учетные данные",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-async def get_user_by_id(
-        self,
-        db: AsyncSession,
-        user_id: int
-):
-    """Получение пользователя по ID"""
-    result = await db.execute(
-        select(User).where(User.user_id == user_id)
-    )
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пользователь не найден"
-        )
-
-    return user
 
 auth_service = AuthService()

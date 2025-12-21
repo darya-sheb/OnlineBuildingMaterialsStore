@@ -15,7 +15,6 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-# 1) Чисто бэк (API) - основная функция регистрации
 @router.post("/register",
              response_model=UserProfile,
              status_code=status.HTTP_201_CREATED,
@@ -38,13 +37,13 @@ async def register(
 
     hashed_password = hash_password(user_data.password)
 
-    user = User(
-        email=user_data.email,
+    user = User.create_with_encryption(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
-        patronymic=user_data.patronymic,
-        phone=user_data.phone,  # Уже нормализовано в валидаторе UserCreate
+        phone=user_data.phone,
+        email=user_data.email,
         password_hash=hashed_password,
+        patronymic=user_data.patronymic,
         role=UserRole(user_data.role)
     )
 
@@ -67,7 +66,6 @@ async def register(
         )
 
 
-# 2) Login функции - оставляем как есть
 @router.post("/login", response_model=Token)
 async def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
@@ -135,7 +133,6 @@ async def login_json(
         )
 
 
-# 3) Дополнительные функции
 @router.post("/verify-token")
 async def verify_token(token: str = Depends(oauth2_scheme)):
     try:
