@@ -34,11 +34,11 @@ async def confirmation_page(req: Request):
 @router.get("/")
 async def get_cart(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+    current_user: User = Depends(get_current_user)
 ):
     """Получить корзину пользователя"""
     try:
-        items = await cart_crud.CartCRUD.get_cart_items(db, current_user.user_id)  # ← ИСПРАВЛЯЕМ!
+        items = await cart_crud.CartCRUD.get_cart_items(db, current_user.user_id)
         
         if not items:
             return {"items": [], "total_price": 0}
@@ -48,7 +48,7 @@ async def get_cart(
         
         for item in items:
             if item.product:
-                price_rub = item.product.price / 100
+                price_rub = item.product.price
                 item_total = price_rub * item.quantity
                 
                 data.append({
@@ -72,13 +72,13 @@ async def get_cart(
 async def add_item(
     item_data: CartItemCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+    current_user: User = Depends(get_current_user)
 ):
     """Добавить товар в корзину"""
     try:
         product = await check_product_availability(db, item_data.product_id, item_data.quantity)
         
-        cart_item = await cart_crud.CartCRUD.add_to_cart(db, current_user.user_id, item_data)  # ← ИСПРАВЛЯЕМ!
+        cart_item = await cart_crud.CartCRUD.add_to_cart(db, current_user.user_id, item_data)
         
         cart_item_with_product = await cart_crud.CartCRUD.get_cart_item(
             db, current_user.user_id, cart_item.cart_item_id
@@ -107,7 +107,7 @@ async def update_cart_item(
     item_id: int,
     update: CartItemUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+    current_user: User = Depends(get_current_user)
 ):
     """Обновить количество товара в корзине"""
     try:
@@ -141,7 +141,7 @@ async def update_cart_item(
 async def remove_item(
     item_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+    current_user: User = Depends(get_current_user)
 ):
     """Удалить товар из корзины"""
     try:
@@ -155,7 +155,7 @@ async def remove_item(
 @router.post("/clear")
 async def clear_cart(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # ← ДОБАВЛЯЕМ!
+    current_user: User = Depends(get_current_user)
 ):
     """Очистить корзину"""
     try:

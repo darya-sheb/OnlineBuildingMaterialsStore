@@ -8,8 +8,7 @@ from .dependencies import (
     get_current_client,
     get_current_staff,
     require_role,
-    get_optional_user,
-    oauth2_scheme
+    get_optional_user
 )
 
 __all__ = [
