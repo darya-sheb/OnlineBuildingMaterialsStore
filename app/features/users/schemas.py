@@ -14,28 +14,34 @@ class UserBase(BaseModel):
     @field_validator('phone')
     @classmethod
     def validate_phone(cls, v):
-        if v is None or v == "":
+        if v is None or v == "" or not v.strip():
             return None
 
-        # Очищаем номер от всех нецифровых символов
+        v = v.strip()
+
+        if re.match(r'^\+\d\s\d{3}\s\d{3}-\d{2}-\d{2}$', v):
+            return v
+
         cleaned = re.sub(r'\D', '', v)
 
-        # Проверяем российские форматы
+        if not cleaned:
+            return v
+
+        if len(cleaned) < 10:
+            raise ValueError('Номер телефона должен содержать не менее 10 цифр')
+
         if cleaned.startswith('7') and len(cleaned) == 11:
-            # Формат: 7XXXXXXXXXX -> конвертируем в +7 XXX XXX-XX-XX
             return f"+7 {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
         elif cleaned.startswith('8') and len(cleaned) == 11:
-            # Формат: 8XXXXXXXXXX -> конвертируем в +7 XXX XXX-XX-XX
             return f"+7 {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
         elif cleaned.startswith('+7') and len(cleaned) == 12:
-            # Формат: +7XXXXXXXXXX -> конвертируем в +7 XXX XXX-XX-XX
             return f"+7 {cleaned[2:5]} {cleaned[5:8]}-{cleaned[8:10]}-{cleaned[10:]}"
         elif len(cleaned) == 10:
-            # Формат без кода страны: XXXXXXXXXX -> добавляем +7
             return f"+7 {cleaned[0:3]} {cleaned[3:6]}-{cleaned[6:8]}-{cleaned[8:]}"
+        elif len(cleaned) == 12 and cleaned.startswith('7'):
+            return f"+{cleaned[0]} {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
         else:
-            raise ValueError('Номер телефона должен содержать 10-11 цифр (Россия)')
-        return v
+            return v
 
 
 class UserCreate(UserBase):
@@ -97,14 +103,8 @@ class UserUpdate(BaseModel):
         if v is None:
             return None
 
-        try:
-            return UserBase.validate_phone(v)
-        except ValueError:
-            import re
-            cleaned = re.sub(r'\D', '', v)
-            if cleaned:
-                return f"+{cleaned}" if not cleaned.startswith('+') else cleaned
-            return v
+        return UserBase.validate_phone(v)
+
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
