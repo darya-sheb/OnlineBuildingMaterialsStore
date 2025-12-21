@@ -23,8 +23,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (response.ok) {
                     alert('Товар добавлен в корзину!');
                 } else {
-                    const error = await response.json();
-                    alert('Ошибка: ' + (error.detail || 'Не удалось добавить товар'));
+                    let errorMsg = 'Не удалось добавить товар';
+                    try {
+                        const error = await response.json();
+                        errorMsg = error.detail || errorMsg;
+                    } catch (e) {
+                        if (response.status === 404) {
+                            errorMsg = 'Товар не найден в базе. Свяжитесь с администратором.';
+                        } else if (response.status === 500) {
+                            errorMsg = 'Ошибка сервера. Попробуйте позже.';
+                        }
+                    }
+                    alert('Ошибка: ' + errorMsg);
                 }
             } catch (err) {
                 alert('Ошибка подключения');

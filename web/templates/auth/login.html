@@ -3,23 +3,31 @@
 {% block title %}Вход в СтройМаг{% endblock %}
 
 {% block content %}
-<div class="форма">
-    <form action="/auth/login/redirect" method="post">
-        <div class="поле">
-            <label>Email:</label>
-            <input type="email" name="email" placeholder="example@mail.ru" required>
-        </div>
-        <div class="поле">
-            <label>Пароль:</label>
-            <input type="password" name="password" placeholder="введите пароль" required>
-        </div>
-        <button type="submit" class="тык">Войти</button>
-    </form>
-</div>
 
-{% if request.query_params.get('error') %}
-<div style="color: red; padding: 10px; margin: 10px; border: 1px solid red;">
-    Ошибка: {{ request.query_params.get('error') }}
+<div class="page-center">
+    <div class="form-container">
+        <h2>Вход в СтройМаг</h2>
+        <form action="/auth/login/redirect" method="post">
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" name="email" placeholder="example@mail.ru" required>
+            </div>
+            <div class="form-group">
+                <label>Пароль:</label>
+                <input type="password" name="password" placeholder="введите пароль" required>
+            </div>
+            <button type="submit" class="btn btn-custom">Войти</button>
+
+            <div class="login-footer">
+                Нет аккаунта? <a href="/auth/register">Зарегистрироваться</a>
+            </div>
+        </form>
+
+        {% if request.query_params.get('error') %}
+        <div class="alert alert-error">
+            Ошибка: {{ request.query_params.get('error') }}
+        </div>
+        {% endif %}
+    </div>
 </div>
-{% endif %}
 {% endblock %}
