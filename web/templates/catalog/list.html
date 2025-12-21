@@ -10,29 +10,41 @@
     <div class="product-card">
         <div class="product-image">
             {% if product.image_path %}
-            <img src=/media/{{ product.image_path }}" alt="Фото {{ product.name }}" width="200"
+            <img src="/media/{{ product.image_path }}"
+                 alt="Фото {{ product.name }}"
+                 class="product-image-img"
                  onerror="this.onerror=null; this.src='/media/no_image_data.jpg';">
             {% else %}
             <div class="no-image-placeholder">
-                <img src="/media/no_image_data.jpg" alt="Фото {{ product.name }}" width="200">
+                <img src="/media/no_image_data.jpg"
+                     alt="Нет фото"
+                     class="product-image-img">
             </div>
             {% endif %}
         </div>
-        <h4 class="product-title">{{ product.name }}</h4>
-        <p class="product-manufacturer"><strong>Производитель:</strong> {{ product.manufacturer }}</p>
-        <p class="product-price"><strong>Цена:</strong> {{ product.price }} руб</p>
-        <p class="product-unit"><strong>Единица измерения:</strong> {{ product.unit }}</p>
-        <p class="product-stock"><strong>В наличии:</strong> {{ product.quantity_available }}</p>
 
-        <div class="product-controls">
-            <label><strong>Количество:</strong></label>
-            <input type="number" class="quantity-input" value="1" min="1" max="{{ product.quantity_available }}"
-                   data-product-id="{{ product.id }}">
-            <span>{{ product.unit }}</span>
+        <div class="product-body">
+            <h4 class="product-title">{{ product.name }}</h4>
+            {% if product.dimensions %}
+            <p class="product-manufacturer"><strong>Размеры:</strong> {{ product.dimensions }}</p>
+            {% endif %}
+            <p class="product-manufacturer"><strong>Производитель:</strong> {{ product.manufacturer }}</p>
+            <p class="product-price"><strong>Цена:</strong> {{ product.price }} руб</p>
+            <p class="product-unit"><strong>Единица измерения:</strong> {{ product.unit }}</p>
+            <p class="product-stock"><strong>В наличии:</strong> {{ product.quantity_available }} </p>
+
+            <div class="product-controls">
+                <label><strong>Количество:</strong></label>
+                <input type="number" class="quantity-input" value="1" min="1" max="{{ product.quantity_available }}"
+                       data-product-id="{{ product.product_id }}">
+                <span>{{ product.unit }}</span>
+            </div>
         </div>
 
         <div class="product-actions">
-            <button class="add-to-cart" data-product-id="{{ product.id }}">Добавить в корзину</button>
+            <button class="add-to-cart" data-product-id="{{ product.product_id }}">
+                Добавить в корзину
+            </button>
         </div>
     </div>
     {% endfor %}

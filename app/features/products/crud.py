@@ -4,6 +4,7 @@ from sqlalchemy import select
 from app.models.product import Product
 from app.features.products.schemas import PrCreate, PrUpdate
 from fastapi import HTTPException
+from app.infra.media_checker import check_media_file_exists
 
 async def get_product(db: AsyncSession, product_id: int) -> Optional[Product]:
     try:
@@ -45,11 +46,12 @@ async def get_products_by_ids(db: AsyncSession, product_ids: List[int]) -> List[
 
 async def create_product(db: AsyncSession, product: PrCreate) -> Product:
     try:
-        # Цена уже в копейках, НЕ умножаем на 100!
         product_data = product.model_dump()
-        
         db_pr = Product(**product_data)
-        
+
+        if db_pr.image_path and not check_media_file_exists(db_pr.image_path):
+            db_pr.image_path = None
+
         db.add(db_pr)
         await db.commit()
         await db.refresh(db_pr)
@@ -72,11 +74,14 @@ async def update_product(db: AsyncSession, product_id: int, update_data: PrUpdat
             raise HTTPException(status_code=404, detail="Товар не найден")
         
         updated = update_data.model_dump(exclude_unset=True)
-        
-        # Если обновляется цена, конвертируем Decimal в копейки
+
         if 'price' in updated and updated['price'] is not None:
             updated['price'] = int(updated['price'] * 100)
-        
+
+        if 'image_path' in updated:
+            if updated['image_path'] and not check_media_file_exists(updated['image_path']):
+                updated['image_path'] = None
+
         for key, value in updated.items():
             setattr(db_pr, key, value)
         
