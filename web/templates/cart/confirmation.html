@@ -3,59 +3,114 @@
 {% block title %}Оформление заказа{% endblock %}
 
 {% block content %}
-<div class="confirmation-order-form">
-    <div class="order-summary">
-        <h3>Ваш заказ:</h3>
-
-        <div class="order-item">
-            <span>Кирпич красный × 10</span>
-            <span>220 руб</span>
-        </div>
-
-        <div class="order-item">
-            <span>Утеплитель Rockwool 100 мм × 2</span>
-            <span>2 390 руб</span>
-        </div>
-
-        <div class="order-total">
-            <strong>Итого: 2 610 руб</strong>
-        </div>
-    </div>
+<div id="order-content">
+    <p>Загрузка заказа...</p>
 </div>
 
-<div class="order-form">
-    <h3>Контактные данные:</h3>
-    
-    <form action="/orders/confirm" method="POST">
-        <div class="форма">
-            <div class="поле">
-                <label>Email:</label>
-                <input type="email" name="email" placeholder="example@mail.ru" required>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const res = await fetch('/cart/', {
+            credentials: 'include'
+        });
+        if (!res.ok) throw new Error('Не удалось загрузить корзину');
+        const data = await res.json();
+
+        if (!data.items || data.items.length === 0) {
+            document.getElementById('order-content').innerHTML = `
+                <p>Ваша корзина пуста :(</p>
+                <a href="/products/catalog" class="btn btn-secondary">Перейти в каталог</a>
+            `;
+            return;
+        }
+
+        let itemsHtml = '';
+        data.items.forEach(item => {
+            itemsHtml += `
+                <div class="order-item">
+                    <span>${item.name} × ${item.quantity}</span>
+                    <span>${(item.total).toFixed(2)} руб</span>
+                </div>
+            `;
+        });
+
+        document.getElementById('order-content').innerHTML = `
+            <div class="confirmation-order-form">
+                <div class="order-summary">
+                    <h3>Ваш заказ:</h3>
+                    ${itemsHtml}
+                    <div class="order-total">
+                        <strong>Итого: ${data.total_price.toFixed(2)} руб</strong>
+                    </div>
+                </div>
             </div>
-            <div class="поле">
-                <label>ФИО:</label>
-                <input type="text" name="full_name" placeholder="введите ФИО" required>
+
+            <div class="order-form">
+                <h3>Контактные данные:</h3>
+                <form action="/orders/confirm" method="POST">
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" name="email" placeholder="example@mail.ru" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ФИО:</label>
+                        <input type="text" name="full_name" placeholder="введите ФИО" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Телефон:</label>
+                        <input type="tel" name="phone" placeholder="введите номер телефона" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Адрес доставки:</label>
+                        <input type="text" name="address" placeholder="г. Москва, ул. Строителей, д. 1" required>
+                    </div>
+                    <div class="order-actions">
+                        <a href="/cart" class="btn btn-secondary">Вернуться в корзину</a>
+                        <button type="submit" class="btn btn-custom">Подтвердить заказ</button>
+                    </div>
+                </form>
             </div>
-            <div class="поле">
-                <label>Телефон:</label>
-                <input type="tel" name="phone" placeholder="введите номер телефона" required>
-            </div>
-            
-            <div class="поле">
-                <label>Адрес доставки:</label>
-                <input type="text" name="address" placeholder="г. Москва, ул. Строителей, д. 1" required>
-            </div>
-            
-            <div class="поле">
-                <label>Комментарий к заказу (необязательно):</label>
-                <textarea name="comment" placeholder="Например: позвонить за час до доставки" rows="3"></textarea>
-            </div>
-        </div>
-        
-        <div class="order-actions">
-            <a href="/cart" class="btn btn-secondary">← Вернуться в корзину</a>
-            <button type="submit" class="btn btn-primary">Подтвердить заказ</button>
-        </div>
-    </form>
-</div>
+        `;
+
+        const profileLink = document.querySelector('.header a[href="/profile"]');
+        if (profileLink) {
+        }
+    } catch (e) {
+        document.getElementById('order-content').innerHTML = `
+            <p class="alert alert-error">Ошибка загрузки заказа</p>
+            <a href="/cart" class="btn btn-secondary">Вернуться в корзину</a>
+        `;
+    }
+});
+</script>
+
+<style>
+.confirmation-order-form, .order-form {
+    margin-bottom: 30px;
+}
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+.order-total {
+    margin-top: 12px;
+    font-size: 1.2em;
+}
+.form-group {
+    margin: 16px 0;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+</style>
 {% endblock %}

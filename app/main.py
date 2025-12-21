@@ -71,7 +71,6 @@ def create_app() -> FastAPI:
     ):
         if not user:
             return RedirectResponse("/auth/login", status_code=303)
-        # Только рендер шаблона — данные подгружаются через JS
         return templates.TemplateResponse("cart/view.html", {
             "request": request,
             "user": user
