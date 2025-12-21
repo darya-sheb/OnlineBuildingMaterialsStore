@@ -1,6 +1,5 @@
 from typing import Optional
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from jose import JWTError
@@ -8,37 +7,27 @@ from app.core.security import decode_access_token
 from app.models.user import User, UserRole
 from app.infra.db import get_db
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
-
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    access_token: Optional[str] = Cookie(None, alias="access_token"),
     db: AsyncSession = Depends(get_db)
 ) -> User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Не удалось подтвердить учетные данные",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    try:
-        payload = decode_access_token(token)
-        user_id: str = payload.get("sub")
-        role: str = payload.get("role")
-
-        if user_id is None or role is None:
-            raise credentials_exception
-
-        result = await db.execute(
-            select(User).where(User.user_id == int(user_id))
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Необходима авторизация",
         )
+    try:
+        payload = decode_access_token(access_token)
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Неверный токен")
+        result = await db.execute(select(User).where(User.user_id == int(user_id)))
         user = result.scalar_one_or_none()
-
-        if user is None:
-            raise credentials_exception
-
+        if not user:
+            raise HTTPException(status_code=401, detail="Пользователь не найден")
         return user
-    except (JWTError, ValueError):
-        raise credentials_exception
+    except (JWTError, ValueError, AttributeError):
+        raise HTTPException(status_code=401, detail="Неверный токен")
 
 async def get_current_active_user(
     current_user: User = Depends(get_current_user)
@@ -52,7 +41,7 @@ def require_role(required_role: UserRole):
         if current_user.role != required_role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Недостаточно прав для выполнения этой операции"
+                detail="Недостаточно прав"
             )
         return current_user
     return role_checker
@@ -61,22 +50,17 @@ get_current_client = require_role(UserRole.CLIENT)
 get_current_staff = require_role(UserRole.STAFF)
 
 async def get_optional_user(
-    token: Optional[str] = Depends(oauth2_scheme),
+    access_token: Optional[str] = Cookie(None, alias="access_token"),
     db: AsyncSession = Depends(get_db)
 ) -> Optional[User]:
-    if not token:
+    if not access_token:
         return None
-
     try:
-        payload = decode_access_token(token)
-        user_id: str = payload.get("sub")
-
+        payload = decode_access_token(access_token)
+        user_id = payload.get("sub")
         if not user_id:
             return None
-
-        result = await db.execute(
-            select(User).where(User.user_id == int(user_id))
-        )
+        result = await db.execute(select(User).where(User.user_id == int(user_id)))
         return result.scalar_one_or_none()
-    except (JWTError, ValueError):
+    except (JWTError, ValueError, AttributeError):
         return None
