@@ -89,8 +89,14 @@ async def register_redirect(
             error_msg = str(e.detail)
             if error_msg.startswith("Value error, "):
                 error_msg = error_msg.replace("Value error, ", "")
+
             return RedirectResponse(
-                url=f"/auth/register?error={error_msg}",
+                url=f"/auth/register?error={error_msg}"
+                    f"&email={email}"
+                    f"&first_name={first_name}"
+                    f"&last_name={last_name}"
+                    f"&patronymic={patronymic or ''}"
+                    f"&phone={phone or ''}",
                 status_code=303
             )
 
@@ -122,14 +128,26 @@ async def register_redirect(
                     msg = msg.replace('Value error, ', '')
                 error_msg = msg
                 break
+
+        # Сохраняем введённые данные при валидационной ошибке
         return RedirectResponse(
-            url=f"/auth/register?error={error_msg}",
+            url=f"/auth/register?error={error_msg}"
+                f"&email={email}"
+                f"&first_name={first_name}"
+                f"&last_name={last_name}"
+                f"&patronymic={patronymic or ''}"
+                f"&phone={phone or ''}",
             status_code=303
         )
     except Exception as e:
         print(f"Registration error: {e}")
         return RedirectResponse(
-            url=f"/auth/register?error=Ошибка при регистрации",
+            url=f"/auth/register?error=Ошибка при регистрации"
+                f"&email={email}"
+                f"&first_name={first_name}"
+                f"&last_name={last_name}"
+                f"&patronymic={patronymic or ''}"
+                f"&phone={phone or ''}",
             status_code=303
         )
 
