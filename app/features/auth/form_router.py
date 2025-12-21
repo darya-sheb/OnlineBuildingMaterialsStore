@@ -168,7 +168,6 @@ async def login_redirect(
             httponly=True,
             max_age=120 * 60,
             samesite="lax",
-            secure=True,
             path="/"
         )
         return response
