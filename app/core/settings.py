@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     AUTH_COOKIE_NAME: str = "access_token"
 
+    # Encryption
+    ENCRYPTION_KEY: str = "stroimagencryptkey"
+
     # Paths
     MEDIA_ROOT: str = "media"
     STATIC_ROOT: str = "web/static"

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict, field_validator, model_validator
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 import re
 
 
@@ -27,8 +27,8 @@ class UserBase(BaseModel):
         if not cleaned:
             return v
 
-        if len(cleaned) < 10:
-            raise ValueError('Номер телефона должен содержать не менее 10 цифр')
+        if len(cleaned) < 11:
+            raise ValueError('Номер телефона должен содержать не менее 11 цифр')
 
         if cleaned.startswith('7') and len(cleaned) == 11:
             return f"+7 {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
@@ -36,8 +36,6 @@ class UserBase(BaseModel):
             return f"+7 {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
         elif cleaned.startswith('+7') and len(cleaned) == 12:
             return f"+7 {cleaned[2:5]} {cleaned[5:8]}-{cleaned[8:10]}-{cleaned[10:]}"
-        elif len(cleaned) == 10:
-            return f"+7 {cleaned[0:3]} {cleaned[3:6]}-{cleaned[6:8]}-{cleaned[8:]}"
         elif len(cleaned) == 12 and cleaned.startswith('7'):
             return f"+{cleaned[0]} {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
         else:
@@ -127,7 +125,9 @@ class UserPublic(BaseModel):
     user_id: int
     email: EmailStr
     first_name: str
+    patronymic: str
     last_name: str
+    phone: str
     role: str
 
 

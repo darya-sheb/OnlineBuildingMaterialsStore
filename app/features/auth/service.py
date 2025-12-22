@@ -1,11 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import HTTPException, status
-from app.core.security import verify_password, decode_access_token, hash_password
+from app.core.security import verify_password
+from app.core.encryption import encryption_service
 from app.models.user import User
-from app.features.users.schemas import UserCreate
-import re
-
 
 class AuthService:
     async def authenticate_user(
@@ -14,10 +12,8 @@ class AuthService:
             email: str,
             password: str
     ):
-        """Аутентификация пользователя"""
-        result = await db.execute(
-            select(User).where(User.email == email)
-        )
+        email_hash = encryption_service.hash_email(email)
+        result = await db.execute(select(User).where(User.email_hash == email_hash))
         user = result.scalar_one_or_none()
 
         if not user:
@@ -33,101 +29,5 @@ class AuthService:
             )
 
         return user
-
-    async def register_user(
-            self,
-            db: AsyncSession,
-            user_data: UserCreate
-    ):
-        """Регистрация нового пользователя"""
-        # Проверяем существование пользователя
-        result = await db.execute(select(User).where(User.email == user_data.email))
-        if result.scalar_one_or_none():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Пользователь с таким email уже существует"
-            )
-
-        # Нормализуем телефон если он есть
-        phone = user_data.phone
-        if phone:
-            phone = self.normalize_phone(phone)
-
-        # Создаем пользователя
-        hashed_password = hash_password(user_data.password)
-        user = User(
-            email=user_data.email,
-            first_name=user_data.first_name,
-            last_name=user_data.last_name,
-            patronymic=user_data.patronymic,
-            phone=phone,
-            password_hash=hashed_password,
-            role=user_data.role
-        )
-
-        try:
-            db.add(user)
-            await db.commit()
-            await db.refresh(user)
-            return user
-        except Exception:
-            await db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Ошибка при регистрации"
-            )
-
-    def normalize_phone(self, phone: str) -> str:
-        """Нормализует телефон в формат +7 XXX XXX-XX-XX"""
-        if not phone or not phone.strip():
-            return phone
-
-        # Очищаем от всех нецифровых символов
-        digits = re.sub(r'\D', '', phone)
-
-        if not digits:
-            return phone
-
-        # Обрабатываем разные форматы
-        if digits.startswith('7') and len(digits) == 11:
-            return f"+7 {digits[1:4]} {digits[4:7]}-{digits[7:9]}-{digits[9:]}"
-        elif digits.startswith('8') and len(digits) == 11:
-            return f"+7 {digits[1:4]} {digits[4:7]}-{digits[7:9]}-{digits[9:]}"
-        elif digits.startswith('+7') and len(digits) == 12:
-            return f"+7 {digits[2:5]} {digits[5:8]}-{digits[8:10]}-{digits[10:]}"
-        elif len(digits) == 10:
-            return f"+7 {digits[0:3]} {digits[3:6]}-{digits[6:8]}-{digits[8:]}"
-        else:
-            return phone
-
-    def verify_token(self, token: str):
-        """Верификация JWT токена"""
-        try:
-            return decode_access_token(token)
-        except  Exception:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Неверные учетные данные",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-async def get_user_by_id(
-        self,
-        db: AsyncSession,
-        user_id: int
-):
-    """Получение пользователя по ID"""
-    result = await db.execute(
-        select(User).where(User.user_id == user_id)
-    )
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пользователь не найден"
-        )
-
-    return user
 
 auth_service = AuthService()

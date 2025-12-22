@@ -1,11 +1,12 @@
 from __future__ import annotations
 import enum
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import (
     DateTime,
     Enum,
     String,
+    Text,
     func,
 )
 from sqlalchemy.orm import (
@@ -31,12 +32,15 @@ class User(Base):
     user_id: Mapped[int] = mapped_column(primary_key=True)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), nullable=False, default=UserRole.CLIENT)
 
-    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    patronymic: Mapped[str | None] = mapped_column(String(100))
-    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    phone: Mapped[str] = mapped_column(String(16), nullable=False) # формат +7 923 456-78-90
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    encrypted_first_name: Mapped[str] = mapped_column(Text, nullable=False)
+    encrypted_patronymic: Mapped[Optional[str]] = mapped_column(Text)
+    encrypted_last_name: Mapped[str] = mapped_column(Text, nullable=False)
+    encrypted_phone: Mapped[str] = mapped_column(Text, nullable=False)
+    encrypted_email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+
+
+    email_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
 
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -47,3 +51,87 @@ class User(Base):
 
     orders: Mapped[list[Order]] = relationship(back_populates="user")
     cart: Mapped[Cart | None] = relationship(back_populates="user", uselist=False)
+
+    @property
+    def first_name(self) -> str:
+        """Расшифрованное имя"""
+        from app.core.encryption import encryption_service
+        return encryption_service.decrypt(self.encrypted_first_name)
+
+    @property
+    def patronymic(self) -> Optional[str]:
+        """Расшифрованное отчество"""
+        if not self.encrypted_patronymic:
+            return None
+        from app.core.encryption import encryption_service
+        return encryption_service.decrypt(self.encrypted_patronymic)
+
+    @property
+    def last_name(self) -> str:
+        """Расшифрованная фамилия"""
+        from app.core.encryption import encryption_service
+        return encryption_service.decrypt(self.encrypted_last_name)
+
+    @property
+    def phone(self) -> str:
+        """Расшифрованный телефон"""
+        from app.core.encryption import encryption_service
+        return encryption_service.decrypt(self.encrypted_phone)
+
+    @property
+    def email(self) -> str:
+        """Расшифрованный email"""
+        from app.core.encryption import encryption_service
+        return encryption_service.decrypt(self.encrypted_email)
+
+    @classmethod
+    def create_with_encryption(
+            cls,
+            first_name: str,
+            last_name: str,
+            phone: str,
+            email: str,
+            password_hash: str,
+            patronymic: Optional[str] = None,
+            role: UserRole = UserRole.CLIENT
+    ) -> User:
+        """Создает пользователя с автоматическим шифрованием данных"""
+        from app.core.encryption import encryption_service
+
+        return cls(
+            encrypted_first_name=encryption_service.encrypt(first_name),
+            encrypted_last_name=encryption_service.encrypt(last_name),
+            encrypted_phone=encryption_service.encrypt(phone),
+            encrypted_email=encryption_service.encrypt(email),
+            encrypted_patronymic=encryption_service.encrypt(patronymic) if patronymic else None,
+            email_hash=encryption_service.hash_email(email),
+            password_hash=password_hash,
+            role=role
+        )
+
+    def update_encrypted_data(
+            self,
+            first_name: Optional[str] = None,
+            last_name: Optional[str] = None,
+            phone: Optional[str] = None,
+            email: Optional[str] = None,
+            patronymic: Optional[str] = None
+    ) -> None:
+        """Обновляет зашифрованные данные"""
+        from app.core.encryption import encryption_service
+
+        if first_name is not None:
+            self.encrypted_first_name = encryption_service.encrypt(first_name)
+
+        if last_name is not None:
+            self.encrypted_last_name = encryption_service.encrypt(last_name)
+
+        if phone is not None:
+            self.encrypted_phone = encryption_service.encrypt(phone)
+
+        if email is not None:
+            self.encrypted_email = encryption_service.encrypt(email)
+            self.email_hash = encryption_service.hash_email(email)
+
+        if patronymic is not None:
+            self.encrypted_patronymic = encryption_service.encrypt(patronymic) if patronymic else None
