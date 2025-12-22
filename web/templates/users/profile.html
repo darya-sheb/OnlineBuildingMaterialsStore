@@ -1,39 +1,81 @@
 {% extends "base.html" %}
 
-{% block title %}Мои заказы - СтройМаг{% endblock %}
+{% block title %}Мой профиль - СтройМаг{% endblock %}
 
 {% block content %}
-<main>
-    <h2>Мои заказы</h2>
-    
-    <div class="orders-list">
-        <div class="order-card">
-            <h3>Заказ #3664</h3>
-            <p><strong>Дата:</strong> 15.12.2024</p>
-            <p><strong>Статус:</strong> В обработке</p>
-            <p><strong>Сумма:</strong> 2 610 руб</p>
-            <a href="/orders/3664" class="btn">Подробнее</a>
+<div class="profile-container">
+    <div class="profile-header">
+        <h2> Мой профиль</h2>
+        <span class="role-badge {{ 'staff' if user.role == 'staff' else 'client' }}">
+            {{ 'Сотрудник' if user.role == 'staff' else 'Клиент' }}
+        </span>
+    </div>
+
+    <div class="profile-card">
+        <!-- Личные данные -->
+        <div class="profile-section">
+            <h3 class="section-title">Личные данные</h3>
+            <div class="data-grid">
+                <div class="data-field">
+                    <span class="data-label">Фамилия</span>
+                    <span class="data-value">{{ user.last_name }}</span>
+                </div>
+                <div class="data-field">
+                    <span class="data-label">Имя</span>
+                    <span class="data-value">{{ user.first_name }}</span>
+                </div>
+                {% if user.patronymic %}
+                <div class="data-field">
+                    <span class="data-label">Отчество</span>
+                    <span class="data-value">{{ user.patronymic }}</span>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        
-        <div class="order-card">
-            <h3>Заказ #3521</h3>
-            <p><strong>Дата:</strong> 10.12.2024</p>
-            <p><strong>Статус:</strong> Доставлен</p>
-            <p><strong>Сумма:</strong> 5 840 руб</p>
-            <a href="/orders/3521" class="btn">Подробнее</a>
+
+        <!-- Контакты -->
+        <div class="profile-section">
+            <h3 class="section-title">Контакты</h3>
+            <div class="data-grid">
+                <div class="data-field">
+                    <span class="data-label"> Email</span>
+                    <span class="data-value">{{ user.email }}</span>
+                </div>
+                {% if user.phone %}
+                <div class="data-field">
+                    <span class="data-label"> Телефон</span>
+                    <span class="data-value">{{ user.phone }}</span>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        
-        <div class="order-card">
-            <h3>Заказ #3412</h3>
-            <p><strong>Дата:</strong> 05.12.2024</p>
-            <p><strong>Статус:</strong> Отменен</p>
-            <p><strong>Сумма:</strong> 1 200 руб</p>
-            <a href="/orders/3412" class="btn">Подробнее</a>
+
+        <!-- Аккаунт -->
+        <div class="profile-section">
+            <h3 class="section-title">Аккаунт</h3>
+            <div class="data-grid">
+                <div class="data-field">
+                    <span class="data-label">ID</span>
+                    <span class="data-value code">{{ user.user_id }}</span>
+                </div>
+                {% if user.created_at %}
+                <div class="data-field">
+                    <span class="data-label">Дата регистрации</span>
+                    <span class="data-value">{{ user.created_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Действия -->
+        <div class="profile-actions">
+            <a href="/profile/me/change_password" class="action-btn btn-primary">
+                Сменить пароль
+            </a>
+            <a href="/products/catalog" class="action-btn btn-secondary">
+                Вернуться в каталог
+            </a>
         </div>
     </div>
-    
-    <div style="margin-top: 20px;">
-        <a href="/profile" class="btn btn-secondary">← Назад в кабинет</a>
-    </div>
-</main>
+</div>
 {% endblock %}

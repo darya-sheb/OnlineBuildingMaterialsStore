@@ -12,7 +12,7 @@
 <script>
 async function loadCart() {
     try {
-        const response = await fetch('/cart/', {
+        const response = await fetch('/cart/api', {
             method: 'GET',
             credentials: 'include',
             headers: {

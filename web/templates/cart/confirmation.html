@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Оформление заказа{% endblock %}
+{% block title %}Оформление заказа - СтройМаг{% endblock %}
 
 {% block content %}
 <div id="order-content">
@@ -8,9 +8,18 @@
 </div>
 
 <script>
+
+const userData = {
+    first_name: "{{ user.first_name }}",
+    last_name: "{{ user.last_name }}",
+    patronymic: "{{ user.patronymic or '' }}",
+    email: "{{ user.email }}",
+    phone: "{{ user.phone }}"
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const res = await fetch('/cart/', {
+        const res = await fetch('/cart/api', {
             credentials: 'include'
         });
         if (!res.ok) throw new Error('Не удалось загрузить корзину');
@@ -18,8 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!data.items || data.items.length === 0) {
             document.getElementById('order-content').innerHTML = `
-                <p>Ваша корзина пуста :(</p>
-                <a href="/products/catalog" class="btn btn-secondary">Перейти в каталог</a>
+                <p class="alert">Ваша корзина пуста :(</p>
+                <a href="/products/catalog" class="btn-custom">Перейти в каталог</a>
             `;
             return;
         }
@@ -28,57 +37,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         data.items.forEach(item => {
             itemsHtml += `
                 <div class="order-item">
-                    <span>${item.name} × ${item.quantity}</span>
-                    <span>${(item.total).toFixed(2)} руб</span>
+                    <span class="item-name">${item.name} × ${item.quantity}</span>
+                    <span class="item-total">${(item.total).toFixed(2)} руб</span>
                 </div>
             `;
         });
 
+        const fullName = `${userData.last_name} ${userData.first_name}${userData.patronymic ? ' ' + userData.patronymic : ''}`;
+
         document.getElementById('order-content').innerHTML = `
-            <div class="confirmation-order-form">
-                <div class="order-summary">
-                    <h3>Ваш заказ:</h3>
-                    ${itemsHtml}
-                    <div class="order-total">
-                        <strong>Итого: ${data.total_price.toFixed(2)} руб</strong>
-                    </div>
+            <h2>Оформление заказа</h2>
+
+            <div class="order-summary">
+                <h3>Ваш заказ:</h3>
+                ${itemsHtml}
+                <div class="order-total">
+                    <strong>Итого: ${data.total_price.toFixed(2)} руб</strong>
                 </div>
             </div>
 
             <div class="order-form">
-                <h3>Контактные данные:</h3>
-                <form action="/orders/confirm" method="POST">
+                <h3>Контактные данные</h3>
+                <form action="/orders/checkout" method="POST" class="confirmation-order-form">
                     <div class="form-group">
-                        <label>Email:</label>
-                        <input type="email" name="email" placeholder="example@mail.ru" required>
+                        <label>Ваши данные:</label>
+                        <div class="user-data-display">
+                            <p><strong>ФИО:</strong> ${fullName}</p>
+                        </div>
                     </div>
+
                     <div class="form-group">
-                        <label>ФИО:</label>
-                        <input type="text" name="full_name" placeholder="введите ФИО" required>
+                        <label>Email для подтверждения:</label>
+                        <input type="email" name="email" value="${userData.email}" placeholder="example@mail.ru" required>
                     </div>
+
                     <div class="form-group">
                         <label>Телефон:</label>
-                        <input type="tel" name="phone" placeholder="введите номер телефона" required>
+                        <input type="tel" name="phone" value="${userData.phone}" placeholder="+7 (999) 123-45-67" required>
                     </div>
+
                     <div class="form-group">
                         <label>Адрес доставки:</label>
-                        <input type="text" name="address" placeholder="г. Москва, ул. Строителей, д. 1" required>
+                        <input type="text" name="address" placeholder="г. Москва, ул. Строителей, д. 1, кв. 5" required>
                     </div>
+
                     <div class="order-actions">
-                        <a href="/cart" class="btn btn-secondary">Вернуться в корзину</a>
-                        <button type="submit" class="btn btn-custom">Подтвердить заказ</button>
+                        <a href="/cart" class="btn-custom">← Вернуться в корзину</a>
+                        <button type="submit" class="btn-custom">Подтвердить заказ</button>
                     </div>
                 </form>
             </div>
         `;
 
-        const profileLink = document.querySelector('.header a[href="/profile"]');
-        if (profileLink) {
-        }
     } catch (e) {
         document.getElementById('order-content').innerHTML = `
             <p class="alert alert-error">Ошибка загрузки заказа</p>
-            <a href="/cart" class="btn btn-secondary">Вернуться в корзину</a>
+            <a href="/cart" class="btn-custom">← Вернуться в корзину</a>
         `;
     }
 });

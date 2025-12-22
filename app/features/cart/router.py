@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.infra.db import get_db
 from app.features.cart import crud as cart_crud
 from app.features.cart.schemas import CartItemCreate, CartItemUpdate
-from app.features.auth.dependencies import get_current_user
+from app.features.auth.dependencies import get_current_user, get_optional_user
 from app.infra.templates import templates
 from app.models.user import User
 
@@ -22,16 +22,16 @@ async def check_product_availability(db: AsyncSession, product_id: int, required
     return product
 
 # HTML endpoints
-@router.get("/page", response_class=HTMLResponse)
-async def cart_page(req: Request):
-    return templates.TemplateResponse("cart/view.html", {"request": req})
+@router.get("/", response_class=HTMLResponse)
+async def cart_page(req: Request, user: User | None = Depends(get_optional_user)):
+    return templates.TemplateResponse("cart/view.html", {"request": req, "user": user})
 
 @router.get("/confirmation", response_class=HTMLResponse)
 async def confirmation_page(req: Request):
     return templates.TemplateResponse("cart/confirmation.html", {"request": req})
 
 # API endpoints
-@router.get("/")
+@router.get("/api")
 async def get_cart(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)

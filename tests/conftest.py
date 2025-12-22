@@ -31,10 +31,16 @@ async def engine():
 async def db(engine):
     SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     async with SessionLocal() as session:
-        tables = ", ".join(f'"{t.name}"' for t in Base.metadata.sorted_tables)
-        if tables:
-            await session.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE;"))
+        if engine.dialect.name == "sqlite":
+            # SQLite не поддерживает TRUNCATE, чистим таблицы вручную
+            for table in reversed(Base.metadata.sorted_tables):
+                await session.execute(table.delete())
             await session.commit()
+        else:
+            tables = ", ".join(f'"{t.name}"' for t in Base.metadata.sorted_tables)
+            if tables:
+                await session.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE;"))
+                await session.commit()
         yield session
 
 
