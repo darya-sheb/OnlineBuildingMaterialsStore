@@ -1,4 +1,4 @@
-from .router import router
+from .router import router, oauth2_scheme
 from . import form_router
 from .service import auth_service, AuthService
 from .schemas import Token, UserLogin

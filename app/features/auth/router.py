@@ -3,6 +3,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
+from pydantic import ValidationError
+
 from app.core.security import create_access_token, hash_password
 from app.features.auth.service import auth_service
 from app.features.auth.schemas import Token, UserLogin
@@ -15,19 +17,52 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
+def validate_and_prepare_form_data(
+        email: str,
+        first_name: str,
+        last_name: str,
+        password: str,
+        password_confirm: str,
+        patronymic: str = None,
+        phone: str = None,
+        role: str = "CLIENT"
+):
+    try:
+        user_data = UserCreate(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            patronymic=patronymic,
+            phone=phone,
+            password=password,
+            password_confirm=password_confirm,
+            role=role
+        )
+        return user_data
+    except ValidationError as e:
+        errors = []
+        for error in e.errors():
+            field = error.get("loc", ["unknown"])[-1]
+            msg = error.get("msg", "Ошибка валидации")
+            if "Value error, " in msg:
+                msg = msg.replace("Value error, ", "")
+            errors.append(f"{field}: {msg}")
+
+        error_msg = "; ".join(errors)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_msg
+        )
+
+
 @router.post("/register",
              response_model=UserProfile,
-             status_code=status.HTTP_201_CREATED,
-             summary="Регистрация нового пользователя",
-             description="Создание нового пользователя в системе с полной валидацией"
+             status_code=status.HTTP_201_CREATED
              )
 async def register(
         user_data: UserCreate,
         db: AsyncSession = Depends(get_db)
 ):
-    """
-    Регистрация нового пользователя с полной валидацией
-    """
     result = await db.execute(select(User).where(User.email == user_data.email))
     if result.scalar_one_or_none():
         raise HTTPException(
@@ -58,8 +93,45 @@ async def register(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Ошибка при создании пользователя"
         )
-    except Exception:
+    except Exception as e:
         await db.rollback()
+        print(f"Registration error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при регистрации"
+        )
+
+
+@router.post("/register/form-data", response_model=UserProfile)
+async def register_from_form_data(
+        email: str,
+        first_name: str,
+        last_name: str,
+        password: str,
+        password_confirm: str,
+        patronymic: str = None,
+        phone: str = None,
+        role: str = "CLIENT",
+        db: AsyncSession = Depends(get_db)
+):
+    try:
+        user_data = validate_and_prepare_form_data(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            patronymic=patronymic,
+            phone=phone,
+            password=password,
+            password_confirm=password_confirm,
+            role=role
+        )
+
+        return await register(user_data, db)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Form registration error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ошибка при регистрации"
