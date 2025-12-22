@@ -127,7 +127,9 @@ class UserPublic(BaseModel):
     user_id: int
     email: EmailStr
     first_name: str
+    patronymic: str
     last_name: str
+    phone: str
     role: str
 
 

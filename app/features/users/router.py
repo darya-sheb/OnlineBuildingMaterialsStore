@@ -9,10 +9,8 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import traceback
 
 from app.features.auth.dependencies import (
-    get_current_user,
     get_current_active_user,
-    get_current_staff,
-    require_role
+    get_current_staff
 )
 from app.features.users.schemas import (
     UserProfile,
@@ -23,7 +21,7 @@ from app.features.users.schemas import (
 )
 from app.core.security import hash_password, verify_password
 from app.infra.db import get_db
-from app.models.user import User, UserRole
+from app.models.user import User
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
@@ -172,7 +170,6 @@ async def change_my_password(
 async def get_all_users(
         skip: int = Query(0, ge=0),
         limit: int = Query(100, ge=1, le=1000),
-        current_user: User = Depends(get_current_staff),
         db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
