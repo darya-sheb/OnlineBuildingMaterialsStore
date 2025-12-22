@@ -26,7 +26,7 @@ from app.models.user import User
 router = APIRouter(prefix="/profile", tags=["profile"])
 
 
-@router.get("/me", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 async def profile_page(
     request: Request,
     current_user: User = Depends(get_current_active_user)
@@ -122,7 +122,7 @@ async def update_my_profile(
         )
 
 
-@router.post("/me/change-password")
+@router.post("/change-password")
 async def change_my_password(
         password_data: ChangePasswordRequest,
         current_user: User = Depends(get_current_active_user),
