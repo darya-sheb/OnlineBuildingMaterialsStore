@@ -7,7 +7,7 @@ from typing import Optional
 
 class DataEncryption:
     def __init__(self):
-        secret_key = os.getenv('ENCRYPTION_KEY', 'your-super-secret-encryption-key-change-this-in-production')
+        secret_key = os.getenv('ENCRYPTION_KEY', 'stroimagencryptkey')
         key_bytes = hashlib.sha256(secret_key.encode()).digest()
         self.fernet = Fernet(base64.urlsafe_b64encode(key_bytes))
 
