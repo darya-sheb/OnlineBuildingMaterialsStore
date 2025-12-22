@@ -33,9 +33,6 @@ async def profile_page(
     request: Request,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    Страница профиля пользователя
-    """
     return templates.TemplateResponse(
         "users/profile.html",
         {
@@ -62,7 +59,6 @@ async def update_my_profile(
         print(f"DEBUG: Starting profile update for user_id={current_user.user_id}")
         print(f"DEBUG: Update data: {update_data}")
 
-        # Используем model_dump для Pydantic v2
         update_dict = update_data.model_dump(exclude_unset=True)
         print(f"DEBUG: Update dict: {update_dict}")
 
@@ -72,7 +68,6 @@ async def update_my_profile(
                 detail="Нет данных для обновления"
             )
 
-        # Обновляем поля
         updated_fields = []
         for key, value in update_dict.items():
             print(f"DEBUG: Setting {key} = {value}")
@@ -84,14 +79,10 @@ async def update_my_profile(
                 print(f"WARNING: User object has no attribute {key}")
 
         print(f"DEBUG: Fields changed: {updated_fields}")
-        print(f"DEBUG: User before commit: {current_user.__dict__}")
 
         await db.commit()
-        print("DEBUG: Commit successful")
 
-        # Обновляем объект из БД
         await db.refresh(current_user)
-        print(f"DEBUG: User after refresh: {current_user.__dict__}")
 
         return current_user
 
@@ -109,7 +100,6 @@ async def update_my_profile(
     except IntegrityError as e:
         await db.rollback()
         print(f"INTEGRITY ERROR: {str(e)}")
-        # Возможно, дублирование email или других уникальных полей
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Ошибка целостности данных (возможно, email уже занят)"
@@ -127,7 +117,7 @@ async def update_my_profile(
     except Exception as e:
         await db.rollback()
         print(f"UNEXPECTED ERROR: {type(e).__name__}: {str(e)}")
-        traceback.print_exc()  # Печатаем полный traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Неожиданная ошибка: {type(e).__name__}"
@@ -167,7 +157,6 @@ async def change_my_password(
         )
 
 
-# для отладки, смотреть список всех юзеров через апи
 @router.get("/users", response_model=List[UserPublic])
 async def get_all_users(
         skip: int = Query(0, ge=0),

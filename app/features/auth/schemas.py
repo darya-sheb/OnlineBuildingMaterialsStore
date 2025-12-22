@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, model_validator
+from pydantic import BaseModel, EmailStr
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -9,4 +9,3 @@ class Token(BaseModel):
     token_type: str = "bearer"
     user_id: int
     role: str
-
