@@ -1,26 +1,22 @@
 import pytest
 from fastapi import HTTPException
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from jose import JWTError
-from passlib.exc import NullPasswordError
 
 from app.features.auth.service import AuthService
 from app.features.auth.schemas import Token, UserLogin
 from app.models.user import UserRole
-from app.core.security import decode_access_token
 
 
 class TestAuthService:
     def test_auth_service_initialization(self):
-        """Проверяет что AuthService успешно создается и имеет необходимые методы"""
+        """Проверяет что AuthService успешно создается и имеет метод authenticate_user"""
         service = AuthService()
         assert service is not None
         assert hasattr(service, 'authenticate_user')
-        assert hasattr(service, 'verify_token')
 
     @pytest.mark.asyncio
     async def test_authenticate_user_success(self, db):
-        """Проверяет успешную аутентификацию существующего пользователя"""
+        """Проверяет успешную аутентификацию существующего пользователя с правильным паролем"""
         from app.models.user import User
 
         user = User.create_with_encryption(
@@ -45,7 +41,7 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_authenticate_user_wrong_password(self, db):
-        """Проверяет аутентификацию с неправильным паролем"""
+        """Проверяет что аутентификация с неправильным паролем возвращает HTTPException 401"""
         service = AuthService()
         from app.models.user import User
 
@@ -70,7 +66,7 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_authenticate_user_not_found(self, db):
-        """Проверяет аутентификацию несуществующего пользователя"""
+        """Проверяет что аутентификация несуществующего пользователя возвращает HTTPException 401"""
         service = AuthService()
 
         with pytest.raises(HTTPException) as exc_info:
@@ -79,30 +75,10 @@ class TestAuthService:
         assert exc_info.value.status_code == 401
         assert "Неверный email или пароль" in str(exc_info.value.detail)
 
-    def test_verify_token_success(self):
-        """Проверяет успешную верификацию валидного токена"""
-        service = AuthService()
-        mock_payload = {"sub": "1", "role": "CLIENT", "email": "test@example.com"}
-        with patch('app.features.auth.service.decode_access_token', return_value=mock_payload):
-            result = service.verify_token("valid_token")
-            assert result == mock_payload
-
-    def test_verify_token_failure_jwt_error(self):
-        """Проверяет верификацию токена с JWTError"""
-        service = AuthService()
-        with patch('app.features.auth.service.decode_access_token') as mock_decode:
-            mock_decode.side_effect = JWTError("Invalid token")
-
-            with pytest.raises(HTTPException) as exc_info:
-                service.verify_token("invalid_token")
-
-            assert exc_info.value.status_code == 401
-            assert "Неверные учетные данные" in str(exc_info.value.detail)
-
 
 class TestAuthSchemas:
     def test_token_schema_creation_with_required_fields(self):
-        """Проверяет создание схемы Token с обязательными полями"""
+        """Проверяет что схема Token создается с обязательными полями"""
         token = Token(
             access_token="test_token_123",
             token_type="bearer",
@@ -115,7 +91,7 @@ class TestAuthSchemas:
         assert token.role == "CLIENT"
 
     def test_token_schema_default_token_type(self):
-        """Проверяет значение по умолчанию для token_type"""
+        """Проверяет что token_type имеет значение по умолчанию 'bearer'"""
         token = Token(
             access_token="test_token",
             user_id=1,
@@ -124,7 +100,7 @@ class TestAuthSchemas:
         assert token.token_type == "bearer"
 
     def test_user_login_schema_valid_credentials(self):
-        """Проверяет создание схемы UserLogin с валидными данными"""
+        """Проверяет что схема UserLogin создается с валидными данными"""
         login_data = UserLogin(
             email="valid@example.com",
             password="SecurePass123!"
@@ -155,7 +131,7 @@ class TestAuthSchemas:
 class TestAuthAPIEndpoints:
     @pytest.mark.asyncio
     async def test_login_json_returns_401_for_wrong_credentials(self, client):
-        """Проверяет что /auth/login-json возвращает 401 для неправильных учетных данных"""
+        """Проверяет что эндпоинт /auth/login-json возвращает 401 для неправильных учетных данных"""
         with patch('app.features.auth.router.auth_service.authenticate_user') as mock_auth:
             mock_auth.side_effect = HTTPException(status_code=401, detail="Неверный email или пароль")
 
@@ -168,7 +144,7 @@ class TestAuthAPIEndpoints:
 
     @pytest.mark.asyncio
     async def test_login_json_returns_token_for_valid_credentials(self, client):
-        """Проверяет что /auth/login-json возвращает токен для правильных учетных данных"""
+        """Проверяет что эндпоинт /auth/login-json возвращает токен для правильных учетных данных"""
         from app.models.user import UserRole
 
         mock_user = MagicMock()
@@ -196,7 +172,7 @@ class TestAuthAPIEndpoints:
 
     @pytest.mark.asyncio
     async def test_login_oauth2_works_with_form_data_format(self, client):
-        """Проверяет что /auth/login работает с форматом form-data OAuth2"""
+        """Проверяет что эндпоинт /auth/login работает с форматом form-data OAuth2"""
         with patch('app.features.auth.router.auth_service.authenticate_user') as mock_auth:
             mock_auth.side_effect = HTTPException(status_code=401, detail="Неверный email или пароль")
 
@@ -209,7 +185,7 @@ class TestAuthAPIEndpoints:
 
     @pytest.mark.asyncio
     async def test_verify_token_validates_correct_token(self, client):
-        """Проверяет что /auth/verify-token валидирует корректный токен"""
+        """Проверяет что эндпоинт /auth/verify-token валидирует корректный токен"""
         with patch('app.core.security.decode_access_token') as mock_decode:
             mock_decode.return_value = {"sub": "100", "role": "CLIENT"}
 
@@ -226,7 +202,7 @@ class TestAuthAPIEndpoints:
 
     @pytest.mark.asyncio
     async def test_verify_token_rejects_invalid_token(self, client):
-        """Проверяет что /auth/verify-token отклоняет невалидный токен"""
+        """Проверяет что эндпоинт /auth/verify-token отклоняет невалидный токен"""
         with patch('app.core.security.decode_access_token') as mock_decode:
             mock_decode.side_effect = Exception("Invalid token")
 
@@ -243,7 +219,7 @@ class TestAuthAPIEndpoints:
 class TestRegistrationAPI:
     @pytest.mark.asyncio
     async def test_register_rejects_duplicate_email(self):
-        """Проверяет что регистрация отклоняет существующий email"""
+        """Проверяет что регистрация отклоняет пользователя с существующим email"""
         from app.features.auth.router import register
         from app.features.users.schemas import UserCreate
         from app.models.user import User
@@ -289,7 +265,7 @@ class TestRegistrationAPI:
 
 class TestPasswordSecurity:
     def test_password_hashing_creates_different_hash(self):
-        """Проверяет что хеширование пароля создает уникальный хеш"""
+        """Проверяет что хеширование пароля создает уникальный хеш, отличный от исходного пароля"""
         from app.core.security import hash_password, verify_password
 
         password = "MySecurePassword123!"
@@ -375,18 +351,6 @@ class TestAuthIntegration:
 
 
 class TestEdgeCases:
-    def test_auth_service_verify_token_with_empty_string(self):
-        """Проверяет верификацию токена с пустой строкой"""
-        service = AuthService()
-
-        with patch('app.features.auth.service.decode_access_token') as mock_decode:
-            mock_decode.side_effect = JWTError("Empty token")
-
-            with pytest.raises(HTTPException) as exc_info:
-                service.verify_token("")
-
-            assert exc_info.value.status_code == 401
-
     def test_token_schema_with_minimum_valid_data(self):
         """Проверяет создание Token схемы с минимальными валидными данными"""
         token = Token(
@@ -408,20 +372,6 @@ class TestEdgeCases:
             await service.authenticate_user(db, test_email, "password")
 
         assert exc_info.value.status_code == 401
-
-
-def test_error_messages_are_in_russian():
-    """Проверяет что сообщения об ошибках на русском языке"""
-    service = AuthService()
-
-    with patch('app.features.auth.service.decode_access_token') as mock_decode:
-        mock_decode.side_effect = JWTError("Invalid token")
-
-        try:
-            service.verify_token("invalid")
-        except HTTPException as e:
-            assert e.status_code == 401
-            assert "Неверные учетные данные" in str(e.detail)
 
 
 def test_auth_service_has_proper_string_representation():
@@ -472,7 +422,7 @@ def test_token_objects_with_different_data_are_not_equal():
 class TestAuthServiceDatabaseInteraction:
     @pytest.mark.asyncio
     async def test_authenticate_user_handles_database_exception(self, db):
-        """Проверяет что authenticate_user корректно обрабатывает исключения БД"""
+        """Проверяет что authenticate_user корректно обрабатывает исключения базы данных"""
         service = AuthService()
 
         with patch('app.features.auth.service.select') as mock_select:
