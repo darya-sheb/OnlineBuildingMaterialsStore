@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # Auth
     JWT_SECRET: str
-    JWT_ALGORITHM: str = "RS256"
+    JWT_ALGORITHM: str
     AUTH_COOKIE_NAME: str = "access_token"
 
     # Encryption
