@@ -7,7 +7,6 @@ from app.core.settings import settings
 
 
 def hash_password(password: str) -> str:
-    """Хеширование пароля с использованием bcrypt."""
     password_bytes = password.encode("utf-8")
     if len(password_bytes) > 72:
         password_bytes = password_bytes[:72]
@@ -17,7 +16,6 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    """Проверка пароля."""
     try:
         password_bytes = password.encode("utf-8")
         if len(password_bytes) > 72:

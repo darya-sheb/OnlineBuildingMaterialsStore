@@ -6,6 +6,8 @@ from typing import Optional
 
 
 class DataEncryption:
+    """Шифрование ПД и хеширование email"""
+
     def __init__(self):
         secret_key = os.getenv('ENCRYPTION_KEY', 'stroimagencryptkey')
         key_bytes = hashlib.sha256(secret_key.encode()).digest()

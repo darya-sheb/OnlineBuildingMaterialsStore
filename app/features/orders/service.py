@@ -13,24 +13,26 @@ from app.models.product import Product
 
 log = logging.getLogger(__name__)
 
+
 async def create_simple_order(db: AsyncSession, order_email: str, phone: str, address: str, user: User | None) -> Order:
     if not user:
         raise ValueError("Не авторизован")
 
     user_id = user.user_id
-    cart_stmt = (select(Cart).options(selectinload(Cart.items).selectinload(CartItem.product)).where(Cart.user_id == user_id))
+    cart_stmt = (
+        select(Cart).options(selectinload(Cart.items).selectinload(CartItem.product)).where(Cart.user_id == user_id))
     cart_res = await db.execute(cart_stmt)
     cart = cart_res.scalar_one_or_none()
-    
+
     if not cart:
         raise ValueError("Корзина не найдена")
-    
+
     if not cart.items:
         raise ValueError("Корзина пуста")
 
     total_price = Decimal('0.0')
     order_items = []
-    
+
     for cart_item in cart.items:
         product = cart_item.product
         required_quantity = cart_item.quantity
@@ -43,7 +45,7 @@ async def create_simple_order(db: AsyncSession, order_email: str, phone: str, ad
 
         total_price += product.price * Decimal(required_quantity)
 
-        order_item = OrderItem(product_id=product.product_id, quantity=required_quantity, 
+        order_item = OrderItem(product_id=product.product_id, quantity=required_quantity,
                                price_per_unit=product.price, total=product.price * Decimal(required_quantity))
         order_items.append(order_item)
 
@@ -66,7 +68,7 @@ async def create_simple_order(db: AsyncSession, order_email: str, phone: str, ad
         await db.refresh(order)
         print(f"Заказ создан успешно! ID: {order.order_id}")
         return order
-        
+
     except Exception as e:
         print(f"Ошибка при создании заказа: {e}")
         import traceback
