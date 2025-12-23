@@ -69,13 +69,129 @@
 
         <!-- Действия -->
         <div class="profile-actions">
-            <a href="/profile/me/change_password" class="action-btn btn-primary">
-                Сменить пароль
+            <a href="/profile/me/change_password" class="profile-btn btn-primary">
+                <i class="fas fa-key"></i> Сменить пароль
             </a>
-            <a href="/products/catalog" class="action-btn btn-secondary">
-                Вернуться в каталог
+            <a href="/products/catalog" class="profile-btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Вернуться в каталог
             </a>
+            <form action="/profile/logout" method="post" class="profile-form">
+                <button type="submit" class="profile-btn btn-danger"
+                        onclick="return confirm('Вы уверены, что хотите выйти?');">
+                    <i class="fas fa-sign-out-alt"></i> Выйти из аккаунта
+                </button>
+            </form>
         </div>
     </div>
 </div>
+
+<style>
+.profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.profile-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    text-align: center;
+}
+
+.profile-btn i {
+    font-size: 14px;
+}
+
+.profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0.95;
+}
+
+.profile-btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    color: white;
+}
+
+.profile-form {
+    margin: 0;
+    padding: 0;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .profile-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .profile-btn {
+        width: 100%;
+        min-width: unset;
+    }
+}
+</style>
+
+<!-- Подключаем Font Awesome для иконок -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.profile-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        });
+
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    });
+});
+</script>
 {% endblock %}
