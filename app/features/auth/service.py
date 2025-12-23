@@ -5,6 +5,7 @@ from app.core.security import verify_password
 from app.core.encryption import encryption_service
 from app.models.user import User
 
+
 class AuthService:
     async def authenticate_user(
             self,
@@ -29,5 +30,6 @@ class AuthService:
             )
 
         return user
+
 
 auth_service = AuthService()

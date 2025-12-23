@@ -7,9 +7,10 @@ from app.core.security import decode_access_token
 from app.models.user import User, UserRole
 from app.infra.db import get_db
 
+
 async def get_current_user(
-    access_token: Optional[str] = Cookie(None, alias="access_token"),
-    db: AsyncSession = Depends(get_db)
+        access_token: Optional[str] = Cookie(None, alias="access_token"),
+        db: AsyncSession = Depends(get_db)
 ) -> User:
     if not access_token:
         raise HTTPException(
@@ -29,14 +30,16 @@ async def get_current_user(
     except (JWTError, ValueError, AttributeError):
         raise HTTPException(status_code=401, detail="Неверный токен")
 
+
 async def get_current_active_user(
-    current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user)
 ) -> User:
     return current_user
 
+
 def require_role(required_role: UserRole):
     async def role_checker(
-        current_user: User = Depends(get_current_active_user)
+            current_user: User = Depends(get_current_active_user)
     ) -> User:
         if current_user.role != required_role:
             raise HTTPException(
@@ -44,14 +47,17 @@ def require_role(required_role: UserRole):
                 detail="Недостаточно прав"
             )
         return current_user
+
     return role_checker
+
 
 get_current_client = require_role(UserRole.CLIENT)
 get_current_staff = require_role(UserRole.STAFF)
 
+
 async def get_optional_user(
-    access_token: Optional[str] = Cookie(None, alias="access_token"),
-    db: AsyncSession = Depends(get_db)
+        access_token: Optional[str] = Cookie(None, alias="access_token"),
+        db: AsyncSession = Depends(get_db)
 ) -> Optional[User]:
     if not access_token:
         return None

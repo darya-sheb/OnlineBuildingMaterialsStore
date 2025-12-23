@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
+
 class ProductC(BaseModel):
     manufacturer: str
     name: str
@@ -12,8 +13,10 @@ class ProductC(BaseModel):
     quantity_available: int = 0
     image_path: Optional[str] = None
 
+
 class PrCreate(ProductC):
     pass
+
 
 class PrUpdate(BaseModel):
     manufacturer: Optional[str] = None
@@ -23,6 +26,7 @@ class PrUpdate(BaseModel):
     price: Optional[Decimal] = None
     quantity_available: Optional[int] = None
     image_path: Optional[str] = None
+
 
 class PrRead(ProductC):
     product_id: int
