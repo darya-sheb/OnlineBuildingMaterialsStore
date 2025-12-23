@@ -6,14 +6,14 @@
 <main>
     <div class="success-page">
         <h2>Заказ успешно оформлен!</h2>
-        <p class="string"><strong>Номер заказа:</strong> 3664.</p>
-        <p class="string">Письмо с подтверждением заказа отправлено на example@mail.ru.</p>
+        <p class="string"><strong>Номер заказа:</strong> {{ order_id }}</p>
+        <p class="string">Письмо с подтверждением заказа отправлено на {{ order_email }}</p>
         <p class="string">Мы свяжемся с вами в течение часа.</p>
     </div>
 
     <div class="success-actions">
-        <a href="/profile/orders" class="btn">Перейти в мой кабинет</a>
-        <a href="/catalog" class="btn">Вернуться в каталог</a>
+        <a href="/profile" class="btn">Перейти в мой кабинет</a>
+        <a href="/products/catalog" class="btn">Вернуться в каталог</a>
     </div>
 </main>
 {% endblock %}

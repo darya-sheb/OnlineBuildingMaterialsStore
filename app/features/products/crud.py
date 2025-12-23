@@ -44,6 +44,7 @@ async def get_products_by_ids(db: AsyncSession, product_ids: List[int]) -> List[
             detail=f"Ошибка при получении товаров: {str(e)}"
         )
 
+# то же самое для staff
 async def create_product(db: AsyncSession, product: PrCreate) -> Product:
     try:
         product_data = product.model_dump()
@@ -64,6 +65,7 @@ async def create_product(db: AsyncSession, product: PrCreate) -> Product:
             detail=f"Ошибка при создании товара: {str(e)}"
         )
 
+# то же самое для staff
 async def update_product(db: AsyncSession, product_id: int, update_data: PrUpdate) -> Optional[Product]:
     try:
         stmt = select(Product).where(Product.product_id == product_id)
@@ -98,6 +100,7 @@ async def update_product(db: AsyncSession, product_id: int, update_data: PrUpdat
             detail=f"Ошибка при обновлении товара: {str(e)}"
         )
 
+# то же самое для staff
 async def delete_product(db: AsyncSession, product_id: int) -> bool:
     try:
         stmt = select(Product).where(Product.product_id == product_id)

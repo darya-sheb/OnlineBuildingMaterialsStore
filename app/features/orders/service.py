@@ -1,35 +1,75 @@
 ﻿from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from fastapi import Depends
-
-from app.features.auth import get_current_user
-from app.models.order import Order
-from app.models.user import User
+from sqlalchemy.orm import selectinload
+from decimal import Decimal
 import logging
+
+from app.models.order import Order
+from app.models.order_item import OrderItem
+from app.models.user import User
+from app.models.cart import Cart
+from app.models.cart_item import CartItem
+from app.models.product import Product
 
 log = logging.getLogger(__name__)
 
-async def create_simple_order(db: AsyncSession, order_email: str, phone: str, address: str, user: User = Depends(get_current_user)) -> Order:
-    s = select(User).where(User.email == user.email)
-    res = await db.execute(s)
-    user = res.scalar_one_or_none()
-    if user:
-        user_id = user.user_id
-    # else:
-        # log.info("Пупупу пока тестик")
-        # user = User(email=email, first_name="анон", last_name="анон", password_hash="qwer", role="CLIENT", phone="+79990000000")
-        # db.add(user)
-        # await db.flush()
-        # user_id = user.user_id
-        
-    order = Order.create_with_encryption(
-        user_id=user_id,
-        order_email=order_email,
-        total_price=0.00,
-        address=address
-    )
+async def create_simple_order(db: AsyncSession, order_email: str, phone: str, address: str, user: User | None) -> Order:
+    if not user:
+        raise ValueError("Не авторизован")
+
+    user_id = user.user_id
+    cart_stmt = (select(Cart).options(selectinload(Cart.items).selectinload(CartItem.product)).where(Cart.user_id == user_id))
+    cart_res = await db.execute(cart_stmt)
+    cart = cart_res.scalar_one_or_none()
     
-    db.add(order)
-    await db.commit()
-    await db.refresh(order)
-    return order
+    if not cart:
+        raise ValueError("Корзина не найдена")
+    
+    if not cart.items:
+        raise ValueError("Корзина пуста")
+
+    total_price = Decimal('0.0')
+    order_items = []
+    
+    for cart_item in cart.items:
+        product = cart_item.product
+        required_quantity = cart_item.quantity
+
+        if hasattr(product, 'quantity_available'):
+            if product.quantity_available >= required_quantity:
+                product.quantity_available -= required_quantity
+            else:
+                raise ValueError(f"Недостаточно товара '{product.name}'.")
+
+        total_price += product.price * Decimal(required_quantity)
+
+        order_item = OrderItem(product_id=product.product_id, quantity=required_quantity, 
+                               price_per_unit=product.price, total=product.price * Decimal(required_quantity))
+        order_items.append(order_item)
+
+    try:
+        order = Order.create_with_encryption(
+            user_id=user_id,
+            order_email=order_email,
+            total_price=total_price,
+            address=address
+        )
+        db.add(order)
+        await db.flush()
+        for order_item in order_items:
+            order_item.order_id = order.order_id
+            db.add(order_item)
+        for cart_item in cart.items:
+            await db.delete(cart_item)
+        await db.delete(cart)
+        await db.commit()
+        await db.refresh(order)
+        print(f"Заказ создан успешно! ID: {order.order_id}")
+        return order
+        
+    except Exception as e:
+        print(f"Ошибка при создании заказа: {e}")
+        import traceback
+        traceback.print_exc()
+        await db.rollback()
+        raise
