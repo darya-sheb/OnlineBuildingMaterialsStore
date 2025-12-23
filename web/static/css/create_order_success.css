@@ -1,0 +1,78 @@
+/* ===== СТИЛИ ДЛЯ СТРАНИЦЫ УСПЕШНОГО ОФОРМЛЕНИЯ ЗАКАЗА ===== */
+.success-page {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 1px solid #e8e8e8;
+    text-align: center;
+}
+
+.success-page h2 {
+    color: #512475;
+    font-size: 28px;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.string {
+    font-size: 16px;
+    color: #333;
+    margin: 15px 0;
+    line-height: 1.6;
+}
+
+.string strong {
+    color: #512475;
+}
+
+.success-actions {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 0 40px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.success-actions .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 200px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.success-actions .btn:first-child {
+    background-color: #9263b3;
+    color: white;
+    border: none;
+}
+
+.success-actions .btn:first-child:hover {
+    background-color: #7e3e9c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(126, 62, 156, 0.2);
+}
+
+.success-actions .btn:last-child {
+    background-color: white;
+    color: #512475;
+    border: 2px solid #9263b3;
+}
+
+.success-actions .btn:last-child:hover {
+    background-color: #f9f5ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(126, 62, 156, 0.15);
+}
