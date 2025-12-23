@@ -40,7 +40,7 @@ async def profile_page(
     )
 
 
-@router.get("/me/change_password", response_class=HTMLResponse)
+@router.get("/change_password", response_class=HTMLResponse)
 async def change_password_page(
         request: Request,
         current_user: User = Depends(get_current_active_user),
@@ -49,7 +49,7 @@ async def change_password_page(
 ):
     """HTML страница для смены пароля"""
     return templates.TemplateResponse(
-        "change_password.html",  # создайте этот файл в templates/
+        "users/change_password.html",  # создайте этот файл в templates/
         {
             "request": request,
             "user": current_user,
@@ -59,7 +59,7 @@ async def change_password_page(
     )
 
 
-@router.post("/me/change-password")
+@router.post("/change-password")
 async def change_my_password(
         request: Request,
         password_data: Optional[ChangePasswordRequest] = None,
@@ -84,7 +84,7 @@ async def change_my_password(
         else:
             if not all([current_password, new_password, confirm_password]):
                 return RedirectResponse(
-                    f"/profile/me/change_password?error=Все поля обязательны для заполнения",
+                    f"/profile/change_password?error=Все поля обязательны для заполнения",
                     status_code=303
                 )
 
@@ -94,7 +94,7 @@ async def change_my_password(
             is_api_request = False
             if new_pass != confirm_pass:
                 return RedirectResponse(
-                    f"/profile/me/change_password?error=Новый пароль и подтверждение не совпадают",
+                    f"/profile/change_password?error=Новый пароль и подтверждение не совпадают",
                     status_code=303
                 )
 
@@ -106,7 +106,7 @@ async def change_my_password(
                 )
             else:
                 return RedirectResponse(
-                    f"/profile/me/change_password?error=Неверный текущий пароль",
+                    f"/profile/change_password?error=Неверный текущий пароль",
                     status_code=303
                 )
 
@@ -118,7 +118,7 @@ async def change_my_password(
                 )
             else:
                 return RedirectResponse(
-                    f"/profile/me/change_password?error=Новый пароль не должен совпадать с текущим",
+                    f"/profile/change_password?error=Новый пароль не должен совпадать с текущим",
                     status_code=303
                 )
 
@@ -132,7 +132,7 @@ async def change_my_password(
                 )
             else:
                 return RedirectResponse(
-                    f"/profile/me/change_password?error={str(e)}",
+                    f"/profile/change_password?error={str(e)}",
                     status_code=303
                 )
 
@@ -145,7 +145,7 @@ async def change_my_password(
             return {"message": "Пароль успешно изменен"}
         else:
             return RedirectResponse(
-                f"/profile/me/change_password?message=Пароль успешно изменен",
+                f"/profile/change_password?message=Пароль успешно изменен",
                 status_code=303
             )
 
@@ -163,7 +163,7 @@ async def change_my_password(
             )
         else:
             return RedirectResponse(
-                f"/profile/me/change_password?error=Произошла ошибка при изменении пароля",
+                f"/profile/change_password?error=Произошла ошибка при изменении пароля",
                 status_code=303
             )
 
