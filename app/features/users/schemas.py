@@ -27,8 +27,8 @@ class UserBase(BaseModel):
         if not cleaned:
             return v
 
-        if len(cleaned) < 11:
-            raise ValueError('Номер телефона должен содержать не менее 11 цифр')
+        if len(cleaned) != 11:
+            raise ValueError('Номер телефона должен содержать 11 цифр')
 
         if cleaned.startswith('7') and len(cleaned) == 11:
             return f"+7 {cleaned[1:4]} {cleaned[4:7]}-{cleaned[7:9]}-{cleaned[9:]}"
