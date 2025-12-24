@@ -20,5 +20,4 @@ async def save_product_image(upload: UploadFile) -> str:
     await upload.close()
     path.write_bytes(data)
 
-    # то, что хранится в БД: products/<file>
     return f"products/{filename}"

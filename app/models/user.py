@@ -32,13 +32,11 @@ class User(Base):
     user_id: Mapped[int] = mapped_column(primary_key=True)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), nullable=False, default=UserRole.CLIENT)
 
-
     encrypted_first_name: Mapped[str] = mapped_column(Text, nullable=False)
     encrypted_patronymic: Mapped[Optional[str]] = mapped_column(Text)
     encrypted_last_name: Mapped[str] = mapped_column(Text, nullable=False)
     encrypted_phone: Mapped[str] = mapped_column(Text, nullable=False)
     encrypted_email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
-
 
     email_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
 

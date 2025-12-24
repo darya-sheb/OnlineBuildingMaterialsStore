@@ -69,13 +69,40 @@
 
         <!-- Действия -->
         <div class="profile-actions">
-            <a href="/profile/me/change_password" class="action-btn btn-primary">
-                Сменить пароль
+            <a href="/profile/change_password" class="profile-btn btn-primary">
+                <i class="fas fa-key"></i> Сменить пароль
             </a>
-            <a href="/products/catalog" class="action-btn btn-secondary">
-                Вернуться в каталог
+            <a href="/products/catalog" class="profile-btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Вернуться в каталог
             </a>
+            <form action="/profile/logout" method="post" class="profile-form">
+                <button type="submit" class="profile-btn btn-danger"
+                        onclick="return confirm('Вы уверены, что хотите выйти?');">
+                    <i class="fas fa-sign-out-alt"></i> Выйти из аккаунта
+                </button>
+            </form>
         </div>
     </div>
 </div>
+
+
+<!-- Подключаем Font Awesome для иконок -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.profile-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        });
+
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -11,6 +11,7 @@ from app.models.user import User
 
 router = APIRouter(prefix="/products", tags=["products"])
 
+
 @router.get("/catalog", response_class=HTMLResponse)
 async def catalog_page(
         request: Request,

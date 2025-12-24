@@ -6,6 +6,7 @@ from app.features.products.schemas import PrCreate, PrUpdate
 from fastapi import HTTPException
 from app.infra.media_checker import check_media_file_exists
 
+
 async def get_product(db: AsyncSession, product_id: int) -> Optional[Product]:
     try:
         stmt = select(Product).where(Product.product_id == product_id)
@@ -18,6 +19,7 @@ async def get_product(db: AsyncSession, product_id: int) -> Optional[Product]:
             detail=f"Ошибка при получении товара: {str(e)}"
         )
 
+
 async def get_products(db: AsyncSession) -> List[Product]:
     try:
         stmt = select(Product)
@@ -29,6 +31,7 @@ async def get_products(db: AsyncSession) -> List[Product]:
             status_code=500,
             detail=f"Ошибка при получении товаров: {str(e)}"
         )
+
 
 async def get_products_by_ids(db: AsyncSession, product_ids: List[int]) -> List[Product]:
     try:
@@ -55,7 +58,7 @@ async def create_product(db: AsyncSession, product: PrCreate) -> Product:
         db.add(db_pr)
         await db.commit()
         await db.refresh(db_pr)
-        
+
         return db_pr
     except Exception as e:
         await db.rollback()
