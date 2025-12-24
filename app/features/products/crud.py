@@ -44,7 +44,6 @@ async def get_products_by_ids(db: AsyncSession, product_ids: List[int]) -> List[
             detail=f"Ошибка при получении товаров: {str(e)}"
         )
 
-# то же самое для staff
 async def create_product(db: AsyncSession, product: PrCreate) -> Product:
     try:
         product_data = product.model_dump()
@@ -65,56 +64,3 @@ async def create_product(db: AsyncSession, product: PrCreate) -> Product:
             detail=f"Ошибка при создании товара: {str(e)}"
         )
 
-# то же самое для staff
-async def update_product(db: AsyncSession, product_id: int, update_data: PrUpdate) -> Optional[Product]:
-    try:
-        stmt = select(Product).where(Product.product_id == product_id)
-        result = await db.execute(stmt)
-        db_pr = result.scalar_one_or_none()
-        
-        if not db_pr:
-            raise HTTPException(status_code=404, detail="Товар не найден")
-        
-        updated = update_data.model_dump(exclude_unset=True)
-
-        if 'price' in updated and updated['price'] is not None:
-            updated['price'] = int(updated['price'] * 100)
-
-        if 'image_path' in updated:
-            if updated['image_path'] and not check_media_file_exists(updated['image_path']):
-                updated['image_path'] = None
-
-        for key, value in updated.items():
-            setattr(db_pr, key, value)
-        
-        await db.commit()
-        await db.refresh(db_pr)
-        
-        return db_pr
-    except HTTPException:
-        raise
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Ошибка при обновлении товара: {str(e)}"
-        )
-
-# то же самое для staff
-async def delete_product(db: AsyncSession, product_id: int) -> bool:
-    try:
-        stmt = select(Product).where(Product.product_id == product_id)
-        result = await db.execute(stmt)
-        db_product = result.scalar_one_or_none()
-        
-        if db_product:
-            await db.delete(db_product)
-            await db.commit()
-            return True
-        return False
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Ошибка при удалении товара: {str(e)}"
-        )
