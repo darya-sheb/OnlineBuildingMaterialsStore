@@ -8,6 +8,8 @@ Online store for building materials company
 - docker compose up -d --build
 3) создать таблицы (первый запуск или если БД пустая)
 - docker compose exec web python -m app.infra.init_db
+- инициировать каталог:
+- - docker compose exec web python -m app.infra.init_products
 4) открываем в браузере:
 сайт: http://localhost:8000/
 health: http://localhost:8000/health
